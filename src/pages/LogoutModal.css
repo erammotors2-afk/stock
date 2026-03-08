@@ -1,0 +1,351 @@
+/* ════════════════════════════════════════════
+   LOGOUT MODAL — Small & Cute
+════════════════════════════════════════════ */
+
+.lo-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: loFade 0.25s ease-out;
+}
+
+@keyframes loFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ═══ CARD ═══ */
+.lo-card {
+    background: var(--bg-card, #161922);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    border-radius: 20px;
+    padding: 28px 24px 22px;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+    animation: loPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes loPop {
+    from {
+        opacity: 0;
+        transform: scale(0.88) translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Top accent */
+.lo-accent {
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 2.5px;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--red, #ef4444),
+            var(--orange, #f97316),
+            transparent);
+    border-radius: 0 0 4px 4px;
+}
+
+/* ═══ EMOJI ═══ */
+.lo-emoji-wrap {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lo-emoji {
+    font-size: 28px;
+    display: block;
+    animation: loWave 2s ease-in-out infinite;
+    transform-origin: 70% 70%;
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes loWave {
+
+    0%,
+    60%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    10% {
+        transform: rotate(14deg) scale(1.1);
+    }
+
+    20% {
+        transform: rotate(-8deg);
+    }
+
+    30% {
+        transform: rotate(14deg);
+    }
+
+    40% {
+        transform: rotate(-4deg);
+    }
+
+    50% {
+        transform: rotate(10deg);
+    }
+}
+
+.lo-emoji-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: var(--red-bg, rgba(239, 68, 68, 0.12));
+    border: 1.5px solid rgba(239, 68, 68, 0.15);
+    z-index: 1;
+    animation: loRingPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes loRingPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.12);
+        opacity: 0.6;
+    }
+}
+
+/* ═══ TEXT ═══ */
+.lo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text, #f8fafc);
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+}
+
+.lo-desc {
+    font-size: 11.5px;
+    color: var(--text-muted, #64748b);
+    line-height: 1.5;
+    margin-bottom: 22px;
+    padding: 0 4px;
+}
+
+/* ═══ BUTTONS ═══ */
+.lo-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.lo-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.2px;
+}
+
+/* Stay button */
+.lo-stay {
+    background: var(--bg-input, #1e2130);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    color: var(--text-sec, #94a3b8);
+}
+
+.lo-stay:hover {
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+    border-color: var(--text-muted, #64748b);
+    color: var(--text, #f8fafc);
+    transform: translateY(-1px);
+}
+
+.lo-stay svg {
+    transition: transform 0.3s;
+}
+
+.lo-stay:hover svg {
+    transform: translateX(-2px);
+}
+
+.lo-stay:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Logout button */
+.lo-go {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+    box-shadow:
+        0 3px 12px rgba(239, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.lo-go::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.lo-go:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 20px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.lo-go:hover::before {
+    opacity: 1;
+}
+
+.lo-go>* {
+    position: relative;
+    z-index: 1;
+}
+
+.lo-go svg {
+    transition: transform 0.3s;
+}
+
+.lo-go:hover svg {
+    transform: translateX(3px);
+}
+
+.lo-go:disabled {
+    cursor: not-allowed;
+}
+
+/* Loading state */
+.lo-go.lo-loading {
+    pointer-events: none;
+}
+
+.lo-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+.lo-dots i {
+    display: block;
+    width: 5px;
+    height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    animation: loDotBounce 1.2s ease-in-out infinite both;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+.lo-dots i:nth-child(1) {
+    animation-delay: -0.3s;
+}
+
+.lo-dots i:nth-child(2) {
+    animation-delay: -0.15s;
+}
+
+@keyframes loDotBounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0.4);
+        opacity: 0.3;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ═══ SIDEBAR LOGOUT BUTTON ═══ */
+.sb-item.logout {
+    color: var(--red, #ef4444);
+}
+
+.sb-item.logout:hover {
+    background: var(--red-bg, rgba(239, 68, 68, 0.15));
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 400px) {
+    .lo-card {
+        max-width: 270px;
+        padding: 24px 20px 18px;
+        border-radius: 16px;
+    }
+
+    .lo-emoji-wrap {
+        width: 46px;
+        height: 46px;
+        margin-bottom: 14px;
+    }
+
+    .lo-emoji {
+        font-size: 24px;
+    }
+
+    .lo-title {
+        font-size: 16px;
+    }
+
+    .lo-desc {
+        font-size: 10.5px;
+        margin-bottom: 18px;
+    }
+
+    .lo-btn {
+        padding: 9px 0;
+        font-size: 11.5px;
+        border-radius: 8px;
+    }
+}
