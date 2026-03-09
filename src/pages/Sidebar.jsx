@@ -197,7 +197,6 @@ const Sidebar = ({
     const mainMenu = [
         { id: 'dashboard', label: 'Dashboard', icon: icons.dashboard, roles: ['user', 'head', 'admin'], color: 'red', path: '/dashboard' },
         { id: 'stockStatus', label: 'Stock Status', icon: icons.stockStatus, roles: ['user', 'head', 'admin'], color: 'blue', path: '/stock-status' },
-        { id: 'stock', label: 'Stock', icon: icons.stock, roles: ['user', 'head', 'admin'], color: 'green', path: '/stock' },
         { id: 'billing', label: 'Billing', icon: icons.billing, roles: ['user', 'head', 'admin'], color: 'purple', path: '/billing' },
         { id: 'delivery', label: 'Delivery', icon: icons.delivery, roles: ['user', 'head', 'admin'], color: 'orange', path: '/delivery' },
         { id: 'cancellation', label: 'Cancellation', icon: icons.cancel, roles: ['user', 'head', 'admin'], color: 'pink', path: '/cancellation' },
