@@ -10,19 +10,8 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedStock, setSelectedStock] = useState(null);
     const [showActionModal, setShowActionModal] = useState(false);
-    const [columnFilters, setColumnFilters] = useState({
-        model_group: '', variant_desc: '', color: '', seating: '', emission: '',
-        model_code: '', chassis_number: '', vin: '', engine_number: '', ageing: '',
-        stock_type: '', dealer_location_name: '', oem_invoice_number: '', oem_invoice_date: '',
-        invoice_id: '', invoice_date: '', so_number: '', grn_no: '', grn_date: ''
-    });
 
     const rowsPerPage = 100;
-
-    const handleColumnFilterChange = (col, val) => {
-        setColumnFilters(prev => ({ ...prev, [col]: val }));
-        setCurrentPage(1); // reset to page 1 on filter
-    };
 
     useEffect(() => {
         fetchStocks();
@@ -66,21 +55,7 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
             filterStatus === 'all' ||
             (stock.stock_type || '').toLowerCase().includes(filterStatus.toLowerCase());
 
-        const matchesColumns = Object.keys(columnFilters).every(col => {
-            const filterVal = columnFilters[col].toLowerCase();
-            if (!filterVal) return true;
-            
-            // Handle date columns separately to match the displayed format
-            if (col.includes('date')) {
-                const dateVal = formatDate(stock[col]).toLowerCase();
-                return dateVal.includes(filterVal);
-            }
-            
-            const stockVal = String(stock[col] || '').toLowerCase();
-            return stockVal.includes(filterVal);
-        });
-
-        return matchesSearch && matchesStatus && matchesColumns;
+        return matchesSearch && matchesStatus;
     });
 
     const totalPages = Math.ceil(filteredStocks.length / rowsPerPage) || 1;
@@ -367,82 +342,25 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
                                     <tr>
                                         <th className="th-center">SL No</th>
                                         <th className="th-center">Action</th>
-                                        <th>
-                                            <div>Model Group</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.model_group} onChange={e => handleColumnFilterChange('model_group', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Variant Description</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.variant_desc} onChange={e => handleColumnFilterChange('variant_desc', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Color</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.color} onChange={e => handleColumnFilterChange('color', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>Seat</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.seating} onChange={e => handleColumnFilterChange('seating', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>MY</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.emission} onChange={e => handleColumnFilterChange('emission', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Model Code</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.model_code} onChange={e => handleColumnFilterChange('model_code', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Chassis Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.chassis_number} onChange={e => handleColumnFilterChange('chassis_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>VIN</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.vin} onChange={e => handleColumnFilterChange('vin', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Engine Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.engine_number} onChange={e => handleColumnFilterChange('engine_number', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>Age</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.ageing} onChange={e => handleColumnFilterChange('ageing', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Stock Type</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.stock_type} onChange={e => handleColumnFilterChange('stock_type', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Dealer Location</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.dealer_location_name} onChange={e => handleColumnFilterChange('dealer_location_name', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>OEM Invoice No</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.oem_invoice_number} onChange={e => handleColumnFilterChange('oem_invoice_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>OEM Inv Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.oem_invoice_date} onChange={e => handleColumnFilterChange('oem_invoice_date', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Invoice ID</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.invoice_id} onChange={e => handleColumnFilterChange('invoice_id', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Invoice Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.invoice_date} onChange={e => handleColumnFilterChange('invoice_date', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>SO Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.so_number} onChange={e => handleColumnFilterChange('so_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>GRN No</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.grn_no} onChange={e => handleColumnFilterChange('grn_no', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>GRN Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.grn_date} onChange={e => handleColumnFilterChange('grn_date', e.target.value)} />
-                                        </th>
+                                        <th>Model Group</th>
+                                        <th>Variant Description</th>
+                                        <th>Color</th>
+                                        <th className="th-center">Seat</th>
+                                        <th className="th-center">MY</th>
+                                        <th>Model Code</th>
+                                        <th>Chassis Number</th>
+                                        <th>VIN</th>
+                                        <th>Engine Number</th>
+                                        <th className="th-center">Age</th>
+                                        <th>Stock Type</th>
+                                        <th>Dealer Location</th>
+                                        <th>OEM Invoice No</th>
+                                        <th>OEM Inv Date</th>
+                                        <th>Invoice ID</th>
+                                        <th>Invoice Date</th>
+                                        <th>SO Number</th>
+                                        <th>GRN No</th>
+                                        <th>GRN Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
