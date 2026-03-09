@@ -11,18 +11,55 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
     const [selectedStock, setSelectedStock] = useState(null);
     const [showActionModal, setShowActionModal] = useState(false);
     const [columnFilters, setColumnFilters] = useState({
-        model_group: '', variant_desc: '', color: '', seating: '', emission: '',
-        model_code: '', chassis_number: '', vin: '', engine_number: '', ageing: '',
-        stock_type: '', dealer_location_name: '', oem_invoice_number: '', oem_invoice_date: '',
-        invoice_id: '', invoice_date: '', so_number: '', grn_no: '', grn_date: ''
+        model_group: [], variant_desc: [], color: [], seating: [], emission: [],
+        model_code: [], chassis_number: [], vin: [], engine_number: [], ageing: [],
+        stock_type: [], dealer_location_name: [], oem_invoice_number: [], oem_invoice_date: [],
+        invoice_id: [], invoice_date: [], so_number: [], grn_no: [], grn_date: []
     });
+    const [openFilterColumn, setOpenFilterColumn] = useState(null);
+    const [dropdownSearch, setDropdownSearch] = useState('');
 
     const rowsPerPage = 100;
 
-    const handleColumnFilterChange = (col, val) => {
-        setColumnFilters(prev => ({ ...prev, [col]: val }));
-        setCurrentPage(1); // reset to page 1 on filter
+    const toggleColumnFilter = (col, val) => {
+        setColumnFilters(prev => {
+            const current = prev[col];
+            const updated = current.includes(val) 
+                ? current.filter(item => item !== val) 
+                : [...current, val];
+            return { ...prev, [col]: updated };
+        });
+        setCurrentPage(1);
     };
+
+    const clearColumnFilter = (col) => {
+        setColumnFilters(prev => ({ ...prev, [col]: [] }));
+        setCurrentPage(1);
+    };
+
+    const selectAllColumnFilter = (col, allVals) => {
+        setColumnFilters(prev => ({ ...prev, [col]: allVals }));
+        setCurrentPage(1);
+    };
+
+    const toggleFilterDropdown = (col, e) => {
+        e.stopPropagation();
+        if (openFilterColumn === col) {
+            setOpenFilterColumn(null);
+        } else {
+            setOpenFilterColumn(col);
+            setDropdownSearch(''); // reset search when opening new dropdown
+        }
+    };
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setOpenFilterColumn(null);
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         fetchStocks();
@@ -67,21 +104,111 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
             (stock.stock_type || '').toLowerCase().includes(filterStatus.toLowerCase());
 
         const matchesColumns = Object.keys(columnFilters).every(col => {
-            const filterVal = columnFilters[col].toLowerCase();
-            if (!filterVal) return true;
+            const selectedVals = columnFilters[col];
+            if (selectedVals.length === 0) return true; // no filter active for this column
             
-            // Handle date columns separately to match the displayed format
+            let stockVal = '';
             if (col.includes('date')) {
-                const dateVal = formatDate(stock[col]).toLowerCase();
-                return dateVal.includes(filterVal);
+                stockVal = formatDate(stock[col]);
+            } else {
+                stockVal = String(stock[col] || '');
             }
             
-            const stockVal = String(stock[col] || '').toLowerCase();
-            return stockVal.includes(filterVal);
+            return selectedVals.includes(stockVal);
         });
 
         return matchesSearch && matchesStatus && matchesColumns;
     });
+
+    const getUniqueValuesForColumn = (col) => {
+        const unique = new Set();
+        stocks.forEach(stock => {
+            let val = '';
+            if (col.includes('date')) {
+                val = formatDate(stock[col]);
+            } else {
+                val = String(stock[col] || '');
+            }
+            unique.add(val);
+        });
+        return Array.from(unique).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+    };
+
+    const renderFilterDropdown = (colName, displayName) => {
+        const uniqueValues = getUniqueValuesForColumn(colName);
+        const filteredValues = uniqueValues.filter(val => 
+            val.toLowerCase().includes(dropdownSearch.toLowerCase())
+        );
+        const selectedRefs = columnFilters[colName] || [];
+        const isActive = selectedRefs.length > 0;
+
+        return (
+            <div className={`ss-col-header ${isActive ? 'has-filter' : ''}`} onClick={(e) => toggleFilterDropdown(colName, e)}>
+                <div className="ss-col-title">
+                    <span>{displayName}</span>
+                    <svg className="ss-filter-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                </div>
+                
+                {openFilterColumn === colName && (
+                    <div className="ss-filter-dropdown" onClick={e => e.stopPropagation()}>
+                        <div className="ss-fd-search">
+                            <input 
+                                type="text" 
+                                placeholder="Search..." 
+                                value={dropdownSearch}
+                                onChange={e => setDropdownSearch(e.target.value)}
+                            />
+                        </div>
+                        <div className="ss-fd-actions">
+                            <label className="ss-fd-checkbox-label">
+                                <input 
+                                    type="checkbox" 
+                                    checked={selectedRefs.length === uniqueValues.length && uniqueValues.length > 0}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            selectAllColumnFilter(colName, uniqueValues);
+                                        } else {
+                                            clearColumnFilter(colName);
+                                        }
+                                    }}
+                                />
+                                <span>(Select All)</span>
+                            </label>
+                        </div>
+                        <div className="ss-fd-list">
+                            {filteredValues.length === 0 ? (
+                                <div className="ss-fd-empty">No results</div>
+                            ) : (
+                                filteredValues.map(val => (
+                                    <label key={val} className="ss-fd-checkbox-label">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedRefs.includes(val)}
+                                            onChange={() => toggleColumnFilter(colName, val)}
+                                        />
+                                        <span>{val || '(Blank)'}</span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                        <div className="ss-fd-footer">
+                            <button className="ss-fd-btn ss-fd-clear" onClick={(e) => {
+                                e.stopPropagation();
+                                clearColumnFilter(colName);
+                                setOpenFilterColumn(null);
+                            }}>Clear</button>
+                            <button className="ss-fd-btn ss-fd-apply" onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenFilterColumn(null);
+                            }}>Apply</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const totalPages = Math.ceil(filteredStocks.length / rowsPerPage) || 1;
     const startIndex = (currentPage - 1) * rowsPerPage;
@@ -367,82 +494,25 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
                                     <tr>
                                         <th className="th-center">SL No</th>
                                         <th className="th-center">Action</th>
-                                        <th>
-                                            <div>Model Group</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.model_group} onChange={e => handleColumnFilterChange('model_group', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Variant Description</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.variant_desc} onChange={e => handleColumnFilterChange('variant_desc', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Color</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.color} onChange={e => handleColumnFilterChange('color', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>Seat</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.seating} onChange={e => handleColumnFilterChange('seating', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>MY</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.emission} onChange={e => handleColumnFilterChange('emission', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Model Code</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.model_code} onChange={e => handleColumnFilterChange('model_code', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Chassis Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.chassis_number} onChange={e => handleColumnFilterChange('chassis_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>VIN</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.vin} onChange={e => handleColumnFilterChange('vin', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Engine Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.engine_number} onChange={e => handleColumnFilterChange('engine_number', e.target.value)} />
-                                        </th>
-                                        <th className="th-center">
-                                            <div>Age</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.ageing} onChange={e => handleColumnFilterChange('ageing', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Stock Type</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.stock_type} onChange={e => handleColumnFilterChange('stock_type', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Dealer Location</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.dealer_location_name} onChange={e => handleColumnFilterChange('dealer_location_name', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>OEM Invoice No</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.oem_invoice_number} onChange={e => handleColumnFilterChange('oem_invoice_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>OEM Inv Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.oem_invoice_date} onChange={e => handleColumnFilterChange('oem_invoice_date', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Invoice ID</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.invoice_id} onChange={e => handleColumnFilterChange('invoice_id', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>Invoice Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.invoice_date} onChange={e => handleColumnFilterChange('invoice_date', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>SO Number</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.so_number} onChange={e => handleColumnFilterChange('so_number', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>GRN No</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.grn_no} onChange={e => handleColumnFilterChange('grn_no', e.target.value)} />
-                                        </th>
-                                        <th>
-                                            <div>GRN Date</div>
-                                            <input className="ss-col-filter" placeholder="Filter..." value={columnFilters.grn_date} onChange={e => handleColumnFilterChange('grn_date', e.target.value)} />
-                                        </th>
+                                        <th>{renderFilterDropdown('model_group', 'Model Group')}</th>
+                                        <th>{renderFilterDropdown('variant_desc', 'Variant Description')}</th>
+                                        <th>{renderFilterDropdown('color', 'Color')}</th>
+                                        <th className="th-center">{renderFilterDropdown('seating', 'Seat')}</th>
+                                        <th className="th-center">{renderFilterDropdown('emission', 'MY')}</th>
+                                        <th>{renderFilterDropdown('model_code', 'Model Code')}</th>
+                                        <th>{renderFilterDropdown('chassis_number', 'Chassis Number')}</th>
+                                        <th>{renderFilterDropdown('vin', 'VIN')}</th>
+                                        <th>{renderFilterDropdown('engine_number', 'Engine Number')}</th>
+                                        <th className="th-center">{renderFilterDropdown('ageing', 'Age')}</th>
+                                        <th>{renderFilterDropdown('stock_type', 'Stock Type')}</th>
+                                        <th>{renderFilterDropdown('dealer_location_name', 'Dealer Location')}</th>
+                                        <th>{renderFilterDropdown('oem_invoice_number', 'OEM Invoice No')}</th>
+                                        <th>{renderFilterDropdown('oem_invoice_date', 'OEM Inv Date')}</th>
+                                        <th>{renderFilterDropdown('invoice_id', 'Invoice ID')}</th>
+                                        <th>{renderFilterDropdown('invoice_date', 'Invoice Date')}</th>
+                                        <th>{renderFilterDropdown('so_number', 'SO Number')}</th>
+                                        <th>{renderFilterDropdown('grn_no', 'GRN No')}</th>
+                                        <th>{renderFilterDropdown('grn_date', 'GRN Date')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
