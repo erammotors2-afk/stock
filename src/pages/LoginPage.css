@@ -1348,23 +1348,16 @@ html {
 
 
 .gc-shine {
-
   position: absolute;
-
   top: 0;
-
   left: -100%;
-
   width: 50%;
-
   height: 100%;
-
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
-
-  animation: cardShine 6s ease-in-out infinite;
-
+  /* Removed shine animation */
+  animation: none;
   pointer-events: none;
-
+  display: none;
 }
 
 
@@ -1748,29 +1741,18 @@ html {
 /* Inset Shadow Inputs */
 
 .fld input,
-
 .fld-select {
-
   width: 100%;
-
-  padding: 16px 20px;
-  font-size: 16px;
+  padding: 18px 22px;
+  font-size: 17px;
   font-family: 'Inter', sans-serif;
-
   color: #fff;
-
   background: rgba(0, 0, 0, 0.2);
-
   border: 1px solid rgba(255, 255, 255, 0.06);
-
   border-radius: clamp(9px, 1.3vw, 12px);
-
   outline: none;
-
   transition: all 0.4s;
-
   box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.2);
-
 }
 
 
