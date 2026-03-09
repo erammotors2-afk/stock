@@ -381,23 +381,38 @@ const Sidebar = ({
 
             {/* ═══ SEARCH ═══ */}
             <div className="sb-search-wrap">
-                <button
-                    className="sb-search-btn"
-                    onClick={() => {
-                        if (!sidebarOpen && window.innerWidth > 850) setSidebarOpen(true);
-                    }}
-                >
-                    {icons.search}
-                </button>
-                {(sidebarOpen || mobileSidebar) && (
-                    <input
-                        type="text"
-                        placeholder="Search menu..."
-                        value={sidebarSearch}
-                        onChange={(e) => setSidebarSearch(e.target.value)}
-                    />
+                {!(sidebarOpen || mobileSidebar) ? (
+                    <button
+                        className="sb-search-btn"
+                        onClick={() => {
+                            if (window.innerWidth > 850) setSidebarOpen(true);
+                        }}
+                        title="Search"
+                    >
+                        {icons.search}
+                    </button>
+                ) : (
+                    <div className="sb-search-inner">
+                        <span className="sb-search-icon">{icons.search}</span>
+                        <input
+                            type="text"
+                            placeholder="Search menu..."
+                            value={sidebarSearch}
+                            onChange={(e) => setSidebarSearch(e.target.value)}
+                            autoFocus={false}
+                        />
+                        {sidebarSearch && (
+                            <button className="sb-search-clear" onClick={() => setSidebarSearch('')} title="Clear">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
+
 
             {/* ═══ NAVIGATION ═══ */}
             <nav className="sb-nav">

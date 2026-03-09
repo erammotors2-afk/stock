@@ -305,6 +305,70 @@
     color: var(--text-muted);
 }
 
+/* ── Search expanded (with icon inside) ── */
+.sb-search-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin: 0 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sb-search-inner:focus-within {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px var(--red-bg);
+}
+
+.sb-search-icon {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.sb-search-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.sb-search-inner input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 12.5px;
+    font-family: 'Inter', sans-serif;
+    min-width: 0;
+}
+
+.sb-search-inner input::placeholder {
+    color: var(--text-muted);
+}
+
+.sb-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.sb-search-clear:hover {
+    color: var(--red);
+}
+
 /* ═══ DESKTOP CLOSED STATE ═══ */
 .sb-closed .sidebar:not(.mobile-show) {
     width: 62px;
