@@ -435,11 +435,6 @@
     vertical-align: middle;
 }
 
-.td-mono {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 11px;
-    letter-spacing: -0.2px;
-}
 
 /* Color Cell */
 .ss-color-cell {
