@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import './StockStatus.css'; // Inheriting exact styling from Stock Status
+import './StockStatus.css';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import LogoutModal from './LogoutModal';
@@ -38,13 +38,14 @@ const RETAIL_COLUMNS = [
     { key: 'uploaded_at', label: 'Uploaded At' }
 ];
 
+const ROW_SIZE = 100;
+
 const RetailReportPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [mobileSidebar, setMobileSidebar] = useState(false);
     const [activeMenu, setActiveMenu] = useState('retailReport');
     const [darkMode, setDarkMode] = useDarkMode();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
-
     const [userRole, setUserRole] = useState('user');
     const [userName, setUserName] = useState('');
     const navigate = useNavigate();
@@ -52,8 +53,9 @@ const RetailReportPage = () => {
     const [retailData, setRetailData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 100;
+    const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -73,13 +75,12 @@ const RetailReportPage = () => {
     useEffect(() => {
         let timeoutId;
         const INACTIVITY_LIMIT = 600000;
-        const handleInactivityLogout = () => {
-            localStorage.removeItem('user');
-            navigate('/', { replace: true });
-        };
         const resetTimer = () => {
             clearTimeout(timeoutId);
-            timeoutId = setTimeout(handleInactivityLogout, INACTIVITY_LIMIT);
+            timeoutId = setTimeout(() => {
+                localStorage.removeItem('user');
+                navigate('/', { replace: true });
+            }, INACTIVITY_LIMIT);
         };
         const events = ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'];
         events.forEach(event => window.addEventListener(event, resetTimer));
@@ -90,21 +91,29 @@ const RetailReportPage = () => {
         };
     }, [navigate]);
 
-    useEffect(() => {
-        fetchRetailData();
-    }, []);
-
-    const fetchRetailData = async () => {
+    const fetchRetailData = async (page = 1, search = '') => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('net_sale')
-                .select('*')
-                .order('uploaded_at', { ascending: false });
+            const from = (page - 1) * ROW_SIZE;
+            const to = from + ROW_SIZE - 1;
 
+            let query = supabase
+                .from('net_sale')
+                .select('*', { count: 'exact' })
+                .order('uploaded_at', { ascending: false })
+                .range(from, to);
+
+            if (search) {
+                query = query.or(
+                    `customername.ilike.%${search}%,sapinvoiceno.ilike.%${search}%,dmsinvoicenumber.ilike.%${search}%,chassisnumber.ilike.%${search}%,engineno.ilike.%${search}%`
+                );
+            }
+
+            const { data, error, count } = await query;
             if (error) throw error;
-            
+
             setRetailData(data || []);
+            setTotalCount(count || 0);
         } catch (error) {
             console.error('Error fetching retail data from Supabase:', error);
         } finally {
@@ -112,16 +121,26 @@ const RetailReportPage = () => {
         }
     };
 
+    useEffect(() => {
+        fetchRetailData(currentPage, searchTerm);
+    }, [currentPage, searchTerm]);
+
+    const handleSearch = () => {
+        setSearchTerm(searchInput);
+        setCurrentPage(1);
+    };
+
+    const handleClearSearch = () => {
+        setSearchInput('');
+        setSearchTerm('');
+        setCurrentPage(1);
+    };
+
     const handleLogoutClick = () => {
         setShowLogoutModal(true);
         if (window.innerWidth <= 850) setMobileSidebar(false);
     };
-
-    const confirmLogout = () => {
-        localStorage.removeItem('user');
-        navigate('/', { replace: true });
-    };
-
+    const confirmLogout = () => { localStorage.removeItem('user'); navigate('/', { replace: true }); };
     const cancelLogout = () => setShowLogoutModal(false);
 
     const formatDate = (dateStr) => {
@@ -134,24 +153,8 @@ const RetailReportPage = () => {
         return `${day}-${month}-${year}`;
     };
 
-    const filteredData = retailData.filter(d => {
-        const searchLower = searchTerm.toLowerCase();
-        return !searchTerm ||
-            (d.customername || '').toLowerCase().includes(searchLower) ||
-            (d.sapinvoiceno || '').toLowerCase().includes(searchLower) ||
-            (d.dmsinvoicenumber || '').toLowerCase().includes(searchLower) ||
-            (d.chassisnumber || '').toLowerCase().includes(searchLower) ||
-            (d.engineno || '').toLowerCase().includes(searchLower);
-    });
-
-    const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
+    const totalPages = Math.ceil(totalCount / ROW_SIZE) || 1;
+    const startIndex = (currentPage - 1) * ROW_SIZE;
 
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -181,64 +184,6 @@ const RetailReportPage = () => {
         return pages;
     };
 
-    const handleExcelDownload = () => {
-        if (filteredData.length === 0) return;
-
-        const headers = ['SL No', ...RETAIL_COLUMNS.map(col => col.label)];
-        const rows = filteredData.map((d, i) => [
-            i + 1,
-            ...RETAIL_COLUMNS.map(col => {
-                const val = d[col.key];
-                if ((col.key.includes('date') || col.key === 'uploaded_at') && val) return formatDate(val);
-                return val || '-';
-            })
-        ]);
-
-        let xml = '<?xml version="1.0" encoding="UTF-8"?>';
-        xml += '<?mso-application progid="Excel.Sheet"?>';
-        xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"';
-        xml += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
-        xml += '<Styles>';
-        xml += '<Style ss:ID="header"><Font ss:Bold="1" ss:Size="10"/>';
-        xml += '<Interior ss:Color="#F3F4F6" ss:Pattern="Solid"/></Style>';
-        xml += '<Style ss:ID="cell"><Font ss:Size="9"/></Style>';
-        xml += '</Styles>';
-        xml += '<Worksheet ss:Name="Retail_Report">';
-        xml += '<Table>';
-
-        headers.forEach(() => {
-            xml += '<Column ss:AutoFitWidth="1" ss:Width="110"/>';
-        });
-
-        xml += '<Row>';
-        headers.forEach(h => {
-            xml += `<Cell ss:StyleID="header"><Data ss:Type="String">${h}</Data></Cell>`;
-        });
-        xml += '</Row>';
-
-        rows.forEach(row => {
-            xml += '<Row>';
-            row.forEach((val, ci) => {
-                const type = (ci === 0) ? 'Number' : 'String';
-                const escaped = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                xml += `<Cell ss:StyleID="cell"><Data ss:Type="${type}">${escaped}</Data></Cell>`;
-            });
-            xml += '</Row>';
-        });
-
-        xml += '</Table></Worksheet></Workbook>';
-
-        const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `RetailReport_${new Date().toISOString().slice(0, 10)}.xls`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
-
     return (
         <div className={`db ${darkMode ? 'dark' : 'light'} ${sidebarOpen && !mobileSidebar ? 'sb-open' : 'sb-closed'}`}>
 
@@ -261,15 +206,12 @@ const RetailReportPage = () => {
             <main className="main">
                 <div className="content" style={{ padding: '10px 14px' }}>
                     <div className="ss-container">
-                        {/* ═══ COMBINED HEADER & TOOLBAR ═══ */}
                         <div className="ss-toolbar">
                             <div className="ss-toolbar-left">
                                 <div className="dash-title-row" style={{ marginRight: '15px' }}>
                                     <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)} style={{ marginRight: '10px', display: window.innerWidth <= 850 ? 'block' : 'none' }}>
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="3" y1="12" x2="21" y2="12" />
-                                            <line x1="3" y1="6" x2="21" y2="6" />
-                                            <line x1="3" y1="18" x2="21" y2="18" />
+                                            <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
                                         </svg>
                                     </button>
                                     <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #10b981, #047857)', width: '30px', height: '30px', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -282,57 +224,44 @@ const RetailReportPage = () => {
                                     </span>
                                     <div className="dash-title-text" style={{ marginLeft: '10px' }}>
                                         <h2 className="dash-title" style={{ fontSize: '15px', marginBottom: '2px' }}>SAP Retail Report</h2>
-                                        <div className="dash-welcome" style={{ fontSize: '10.5px' }}>
-                                            <span>Net Sale Data Viewer</span>
-                                        </div>
+                                        <div className="dash-welcome" style={{ fontSize: '10.5px' }}><span>Net Sale Data Viewer</span></div>
                                     </div>
                                 </div>
 
                                 <div className="ss-search-wrap">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                                     </svg>
                                     <input
                                         type="text"
-                                        placeholder="Search invoice, chassis, name..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Search name, invoice, chassis..."
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                                     />
-                                    {searchTerm && (
-                                        <button className="ss-clear-btn" onClick={() => setSearchTerm('')}>
+                                    {searchInput && (
+                                        <button className="ss-clear-btn" onClick={handleClearSearch}>
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                                             </svg>
                                         </button>
                                     )}
+                                    <button onClick={handleSearch} style={{ background: 'var(--brand-primary)', color: '#fff', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px', marginLeft: '4px' }}>Search</button>
                                 </div>
 
                                 <div className="ss-mini-stats">
                                     <div className="ss-chip ss-chip-total">
                                         <span className="ss-chip-dot"></span>
                                         <span>Total</span>
-                                        <span className="ss-chip-num">{filteredData.length.toLocaleString()}</span>
+                                        <span className="ss-chip-num">{totalCount.toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div className="ss-toolbar-right">
-                                <button className="ss-icon-btn ss-excel-btn" onClick={handleExcelDownload} title="Download Excel" disabled={filteredData.length === 0}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                                        <polyline points="14 2 14 8 20 8" />
-                                        <line x1="16" y1="13" x2="8" y2="13" />
-                                        <line x1="16" y1="17" x2="8" y2="17" />
-                                        <polyline points="10 9 9 9 8 9" />
-                                    </svg>
-                                </button>
 
-                                <button className="ss-icon-btn ss-refresh-btn" onClick={fetchRetailData} title="Refresh">
+                            <div className="ss-toolbar-right">
+                                <button className="ss-icon-btn ss-refresh-btn" onClick={() => fetchRetailData(currentPage, searchTerm)} title="Refresh">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                        <polyline points="23 4 23 10 17 10" />
-                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                                        <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                                     </svg>
                                 </button>
                                 {userName && (
@@ -343,7 +272,6 @@ const RetailReportPage = () => {
                             </div>
                         </div>
 
-                        {/* ═══ TABLE CARD ═══ */}
                         <div className="ss-table-card">
                             <div className="ss-rainbow-bar"></div>
 
@@ -352,7 +280,7 @@ const RetailReportPage = () => {
                                     <div className="ss-spinner"></div>
                                     <p>Loading Retail Data...</p>
                                 </div>
-                            ) : filteredData.length === 0 ? (
+                            ) : retailData.length === 0 ? (
                                 <div className="ss-empty">
                                     <div className="ss-empty-icon">📊</div>
                                     <p>No retail sales found</p>
@@ -370,41 +298,36 @@ const RetailReportPage = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {paginatedData.map((row, idx) => (
+                                                {retailData.map((row, idx) => (
                                                     <tr key={row.id || idx}>
                                                         <td className="td-center">{startIndex + idx + 1}</td>
                                                         {RETAIL_COLUMNS.map(col => {
                                                             const val = row[col.key];
-                                                            
                                                             if (col.key === 'chassisnumber' || col.key === 'engineno') {
                                                                 return <td key={col.key} className="mono">{val || '-'}</td>;
                                                             }
                                                             if (col.key === 'invoicelink' && val) {
                                                                 return (
                                                                     <td key={col.key}>
-                                                                        <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-primary)', textDecoration: 'none' }}>
-                                                                            View Link
-                                                                        </a>
+                                                                        <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-primary)', textDecoration: 'none' }}>View</a>
                                                                     </td>
                                                                 );
                                                             }
                                                             if ((col.key.includes('date') || col.key === 'uploaded_at') && val) {
                                                                 return <td key={col.key}>{formatDate(val)}</td>;
                                                             }
-
-                                                            return <td key={col.key}>{val || '-'}</td>;
+                                                            return <td key={col.key}>{val ?? '-'}</td>;
                                                         })}
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                    
-                                    {/* PAGINATION */}
+
                                     {totalPages > 1 && (
                                         <div className="ss-pagination">
                                             <span className="ss-pg-info">
-                                                {startIndex + 1}–{Math.min(endIndex, filteredData.length)} of <strong>{filteredData.length.toLocaleString()}</strong>
+                                                {startIndex + 1}–{Math.min(startIndex + ROW_SIZE, totalCount)} of <strong>{totalCount.toLocaleString()}</strong>
                                             </span>
                                             <div className="ss-pg-controls">
                                                 <button className="ss-pg-btn" onClick={() => goToPage(1)} disabled={currentPage === 1}>
@@ -435,11 +358,7 @@ const RetailReportPage = () => {
                 </div>
             </main>
 
-            <LogoutModal
-                show={showLogoutModal}
-                onCancel={cancelLogout}
-                onConfirm={confirmLogout}
-            />
+            <LogoutModal show={showLogoutModal} onCancel={cancelLogout} onConfirm={confirmLogout} />
         </div>
     );
 };
