@@ -1,9 +1,0 @@
-name = "eram-stock-api"
-main = "index.js"
-compatibility_date = "2024-01-01"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "eram-stock-db"
-database_id = "13779fac-50e0-4d7c-b421-a2e93cc70444"
-

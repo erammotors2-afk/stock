@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../config/supabaseClient';
 import { sendOtp, verifyOtp, clearOtp, sendResetOtp, verifyResetOtp } from '../otpService';
+import bcrypt from 'bcryptjs';
 import './LoginPage.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://eram-stock-api.erammotors2.workers.dev';
 
 const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -105,25 +105,60 @@ const LoginPage = () => {
         setLoginSuccess('');
 
         try {
-            const res = await fetch(`${API_URL}/api/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: credentials.username, password: credentials.password }),
-            });
-            const json = await res.json();
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .ilike('username', credentials.username)
+                .maybeSingle();
 
-            if (!res.ok || !json.user) {
-                setLoginError(json.error || 'Invalid username or password. Please try again.');
+            if (error || !data) {
+                setLoginError('Invalid username or password. Please try again.');
                 setIsLoggingIn(false);
                 return;
             }
 
-            const data = json.user;
-            localStorage.setItem('user', JSON.stringify(data));
+            if (data.status === 'Inactive' || data.is_active === false) {
+                setLoginError('Your account is inactive. Please contact the administrator.');
+                setIsLoggingIn(false);
+                return;
+            }
+
+            const isPasswordMatch = bcrypt.compareSync(credentials.password, data.password_hash);
+
+            if (!isPasswordMatch) {
+                setLoginError('Invalid username or password. Please try again.');
+                setIsLoggingIn(false);
+                return;
+            }
+
+            const userData = {
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                full_name: data.full_name,
+                role: data.role,
+                cluster: data.cluster,
+                status: data.status
+            };
+
+            localStorage.setItem('user', JSON.stringify(userData));
 
             let welcomeName = data.full_name || data.username || 'User';
+            if (welcomeName.includes('@') && /\d/.test(welcomeName)) {
+                welcomeName = data.username || 'User';
+            }
+
             setLoginError('');
             setLoginSuccess(`Welcome back, ${welcomeName}! Redirecting...`);
+
+            try {
+                await supabase
+                    .from('users')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('id', data.id);
+            } catch (dbErr) {
+                console.error('Non-critical error updating last login:', dbErr);
+            }
 
             setTimeout(() => {
                 navigate('/dashboard', { replace: true });
@@ -164,12 +199,14 @@ const LoginPage = () => {
         setIsSendingResetOtp(true);
 
         try {
-            // Check that user exists in D1 via Worker API
-            const res = await fetch(`${API_URL}/api/users`);
-            const json = await res.json();
-            const userExists = json.data?.find(u => u.email === resetEmail && u.status === 'Active');
+            const { data: user, error } = await supabase
+                .from('users')
+                .select('id, email')
+                .eq('email', resetEmail)
+                .eq('is_active', true)
+                .maybeSingle();
 
-            if (!userExists) {
+            if (error || !user) {
                 setResetError('No account found with this email address.');
                 setIsSendingResetOtp(false);
                 return;
@@ -234,29 +271,28 @@ const LoginPage = () => {
         setIsResettingPassword(true);
 
         try {
-            // Find user by email to get their id
-            const listRes = await fetch(`${API_URL}/api/users`);
-            const listJson = await listRes.json();
-            const user = listJson.data?.find(u => u.email === resetEmail);
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPassword = bcrypt.hashSync(resetNewPassword, salt);
 
-            if (!user) {
-                setResetError('User not found.');
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    password_hash: hashedPassword,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('email', resetEmail);
+
+            if (error) {
+                setResetError('Failed to update password: ' + error.message);
                 setIsResettingPassword(false);
                 return;
             }
 
-            const patchRes = await fetch(`${API_URL}/api/users/${user.id}/password`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: resetNewPassword }),
-            });
-            const patchJson = await patchRes.json();
-
-            if (!patchRes.ok) {
-                setResetError('Failed to update password: ' + patchJson.error);
-                setIsResettingPassword(false);
-                return;
-            }
+            const { data: user } = await supabase
+                .from('users')
+                .select('username')
+                .eq('email', resetEmail)
+                .maybeSingle();
 
             setResetSuccess('Password updated successfully! Redirecting to login...');
 
@@ -270,7 +306,9 @@ const LoginPage = () => {
                 setResetError('');
                 setResetSuccess('');
                 setResetOtpSent('');
-                setCredentials({ username: user.username, password: resetNewPassword });
+                if (user) {
+                    setCredentials({ username: user.username, password: resetNewPassword });
+                }
             }, 3000);
 
         } catch (err) {
@@ -313,9 +351,11 @@ const LoginPage = () => {
         setIsSendingOtp(true);
 
         try {
-            const listRes = await fetch(`${API_URL}/api/users`);
-            const listJson = await listRes.json();
-            const existingUser = listJson.data?.find(u => u.email === signupEmail);
+            const { data: existingUser } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', signupEmail)
+                .maybeSingle();
 
             if (existingUser) {
                 setEmailError('This email is already registered. Please login instead.');
@@ -375,31 +415,85 @@ const LoginPage = () => {
         const finalUsername = signupUsername.trim();
 
         const usernameError = validateUsername(finalUsername);
-        if (usernameError) { setSignupError(usernameError); return; }
-        if (!signupName.trim()) { setSignupError('Please enter your full name'); return; }
-        if (signupPassword.length < 6) { setSignupError('Password must be at least 6 characters'); return; }
-        if (signupPassword !== signupConfirmPassword) { setSignupError('Passwords do not match'); return; }
-        if (!signupCluster) { setSignupError('Please select your cluster'); return; }
+        if (usernameError) {
+            setSignupError(usernameError);
+            return;
+        }
+
+        if (!signupName.trim()) {
+            setSignupError('Please enter your full name');
+            return;
+        }
+
+        if (signupPassword.length < 6) {
+            setSignupError('Password must be at least 6 characters');
+            return;
+        }
+
+        if (signupPassword !== signupConfirmPassword) {
+            setSignupError('Passwords do not match');
+            return;
+        }
+
+        if (!signupCluster) {
+            setSignupError('Please select your cluster');
+            return;
+        }
 
         setIsSaving(true);
 
         try {
-            const res = await fetch(`${API_URL}/api/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            const { data: existingUsername } = await supabase
+                .from('users')
+                .select('id')
+                .ilike('username', finalUsername)
+                .maybeSingle();
+
+            if (existingUsername) {
+                setSignupError('This username is already taken. Please choose another.');
+                setIsSaving(false);
+                return;
+            }
+
+            const { data: existingEmail } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', signupEmail)
+                .maybeSingle();
+
+            if (existingEmail) {
+                setSignupError('This email is already registered.');
+                setIsSaving(false);
+                return;
+            }
+
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPassword = bcrypt.hashSync(signupPassword, salt);
+
+            const { error } = await supabase
+                .from('users')
+                .insert([{
                     username: finalUsername,
                     email: signupEmail,
-                    password: signupPassword,
+                    password_hash: hashedPassword,
                     full_name: signupName.trim(),
                     cluster: signupCluster,
+                    status: 'Active',
+                    phone: null,
                     role: 'user',
-                }),
-            });
-            const json = await res.json();
+                    is_active: true,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                }])
+                .select()
+                .maybeSingle();
 
-            if (!res.ok) {
-                setSignupError(json.error || 'Failed to create account.');
+            if (error) {
+                if (error.code === '23505') {
+                    setSignupError('Username or email already exists. Please try different values.');
+                } else {
+                    setSignupError('Failed to create account: ' + error.message);
+                }
                 setIsSaving(false);
                 return;
             }
@@ -419,6 +513,7 @@ const LoginPage = () => {
                 setSignupSuccess('');
                 setSignupError('');
                 setOtpSentMessage('');
+
                 setCredentials({ username: finalUsername, password: signupPassword });
             }, 4000);
 
