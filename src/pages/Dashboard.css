@@ -817,8 +817,8 @@
 }
 
 .dash-icon {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--red), #f97316);
     display: flex;
@@ -830,8 +830,8 @@
 }
 
 .dash-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 17px;
+    height: 17px;
     stroke: #fff;
 }
 
@@ -855,7 +855,7 @@
 
 .dash-title {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 900;
     background: linear-gradient(135deg, var(--red) 0%, #f97316 50%, #eab308 100%);
     -webkit-background-clip: text;
@@ -870,7 +870,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     font-weight: 500;
 }
@@ -2047,17 +2047,17 @@ tr:hover td {
     }
 
     .dash-icon {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
     }
 
     .dash-icon svg {
-        width: 17px;
-        height: 17px;
+        width: 15px;
+        height: 15px;
     }
 
     .dash-title {
-        font-size: 18px;
+        font-size: 15px;
     }
 }
 
@@ -2101,11 +2101,11 @@ tr:hover td {
     }
 
     .dash-title {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .dash-welcome {
-        font-size: 11px;
+        font-size: 10px;
     }
 
     .modal-card {
