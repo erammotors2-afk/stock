@@ -611,6 +611,39 @@ const LoginPage = () => {
                 <div className="streak s1"></div>
                 <div className="streak s2"></div>
                 <div className="streak s3"></div>
+                
+                {/* 🚗 ANIMATED CAR BACKGROUND */}
+                <div className="bg-car-wrap">
+                    <svg className="bg-car-svg" viewBox="0 0 120 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Car Body - Mahindra SUV Style */}
+                        <path d="M5 35H115L112 28C110 24 105 22 100 22H30C22 22 15 25 10 30L5 35Z" fill="#d32f2f" />
+                        <path d="M25 22L35 12C37 10 40 9 43 9H85C88 9 91 10 93 12L103 22H25Z" fill="#b71c1c" />
+                        {/* Windows */}
+                        <path d="M44 11H60V20H38L44 11Z" fill="#1e293b" opacity="0.6" />
+                        <path d="M64 11H82L90 20H64V11Z" fill="#1e293b" opacity="0.6" />
+                        {/* Headlights */}
+                        <circle cx="10" cy="31" r="2" fill="#fff" opacity="0.8" />
+                        <circle cx="112" cy="31" r="2" fill="#fff" opacity="0.8" />
+                        {/* Wheels with rotation animation handled in CSS */}
+                        <g className="car-wheel wheel-front">
+                            <circle cx="30" cy="36" r="6" fill="#1a1a1a" />
+                            <circle cx="30" cy="36" r="3" fill="#64748b" />
+                            <line x1="30" y1="33" x2="30" y2="39" stroke="#94a3b8" strokeWidth="1" />
+                            <line x1="27" y1="36" x2="33" y2="36" stroke="#94a3b8" strokeWidth="1" />
+                        </g>
+                        <g className="car-wheel wheel-rear">
+                            <circle cx="90" cy="36" r="6" fill="#1a1a1a" />
+                            <circle cx="90" cy="36" r="3" fill="#64748b" />
+                            <line x1="90" y1="33" x2="90" y2="39" stroke="#94a3b8" strokeWidth="1" />
+                            <line x1="87" y1="36" x2="93" y2="36" stroke="#94a3b8" strokeWidth="1" />
+                        </g>
+                        {/* Speed Lines */}
+                        <line className="speed-line sl-1" x1="-15" y1="25" x2="-5" y2="25" stroke="#ef4444" strokeWidth="1" strokeLinecap="round" />
+                        <line className="speed-line sl-2" x1="-20" y1="32" x2="-8" y2="32" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+                        <line className="speed-line sl-3" x1="-12" y1="38" x2="-2" y2="38" stroke="#ef4444" strokeWidth="0.8" strokeLinecap="round" />
+                    </svg>
+                </div>
+
                 <div className="particles">
                     <i style={{ '--d': '12s', '--x': '10%' }} />
                     <i style={{ '--d': '18s', '--x': '25%' }} />
