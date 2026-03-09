@@ -1297,21 +1297,13 @@ html {
 /* ═══ HD GLASS CARD AREA ═══ */
 
 .lp-card-area {
-
-  flex: 0 0 clamp(380px, 45vw, 550px);
-
+  flex: 0 0 clamp(450px, 50vw, 700px);
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   padding: clamp(16px, 2.5vw, 36px);
-
   animation: caIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-
   opacity: 0;
-
 }
 
 
@@ -1341,14 +1333,14 @@ html {
 .glass-card {
   position: relative;
   width: 100%;
-  max-width: 540px;
+  max-width: 620px;
   background: rgba(30, 30, 38, 0.65);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: clamp(18px, 2.2vw, 24px);
-  padding: clamp(24px, 4vw, 42px) clamp(22px, 3.5vw, 34px);
+  border-radius: clamp(20px, 2.5vw, 28px);
+  padding: clamp(36px, 5vw, 52px) clamp(32px, 4vw, 44px);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   overflow: hidden;
 }
@@ -1586,17 +1578,11 @@ html {
 
 
 .gc-head h2 {
-
   font-family: 'Playfair Display', serif;
-
-  font-size: clamp(22px, 2.8vw, 28px);
-
+  font-size: clamp(26px, 3.2vw, 32px);
   font-weight: 800;
-
   color: #f8fafc;
-
-  margin-bottom: 8px;
-
+  margin-bottom: 12px;
 }
 
 
@@ -1696,17 +1682,11 @@ html {
 /* HD Form Elements */
 
 .gc-form {
-
   display: flex;
-
   flex-direction: column;
-
-  gap: clamp(12px, 1.8vh, 18px);
-
+  gap: clamp(16px, 2.2vh, 24px);
   flex-grow: 1;
-
-  padding-bottom: 10px;
-
+  padding-bottom: 15px;
 }
 
 
@@ -2103,16 +2083,11 @@ html {
 
   width: 100%;
 
-  padding: clamp(10px, 1.5vh, 13px) 20px;
-
-  font-size: clamp(11px, 1.2vw, 13px);
-
-  font-weight: 600;
-
+  padding: clamp(14px, 1.8vh, 18px) 24px;
+  font-size: clamp(14px, 1.4vw, 16px);
+  font-weight: 700;
   font-family: 'Inter', sans-serif;
-
   color: #fff;
-
   background: linear-gradient(135deg, #d32f2f, #b71c1c);
 
   border: 1px solid rgba(255, 255, 255, 0.1);
