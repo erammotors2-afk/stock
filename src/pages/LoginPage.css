@@ -1753,10 +1753,8 @@ html {
 
   width: 100%;
 
-  padding: clamp(10px, 1.3vh, 12px) clamp(12px, 1.8vw, 14px);
-
-  font-size: clamp(11px, 1.1vw, 13px);
-
+  padding: 16px 20px;
+  font-size: 16px;
   font-family: 'Inter', sans-serif;
 
   color: #fff;
