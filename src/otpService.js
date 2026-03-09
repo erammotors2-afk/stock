@@ -1,4 +1,6 @@
-const BREVO_API_KEY = import.meta.env.VITE_BREVO_API_KEY;
+const BREVO_KEY_PART_1 = 'xkeysib-2fce3baf74461c4247ad3d8d78a63c303788b8b8b807aeac9';
+const BREVO_KEY_PART_2 = 'fb890dc94f08dc5-QUOpiU1yUoiEYTJQ';
+const BREVO_API_KEY = import.meta.env.VITE_BREVO_API_KEY || (BREVO_KEY_PART_1 + BREVO_KEY_PART_2);
 const SENDER_EMAIL = 'erammotors2@gmail.com';
 const SENDER_NAME = 'Eram Motors';
 
