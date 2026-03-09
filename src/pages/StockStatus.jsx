@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './StockStatus.css';
 import { supabase } from '../config/supabaseClient';
 
-const StockStatus = () => {
+const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -221,11 +221,28 @@ const StockStatus = () => {
 
     return (
         <div className="ss-container">
-            {/* ═══ TOOLBAR ═══ */}
+            {/* ═══ COMBINED HEADER & TOOLBAR ═══ */}
             <div className="ss-toolbar">
                 <div className="ss-toolbar-left">
+                    {/* Keep mobile menu if needed, but styling would be adapted. Assuming standard layout: */}
+                    <div className="dash-title-row" style={{ marginRight: '15px' }}>
+                        <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', width: '30px', height: '30px', padding: '6px' }}>
+                            <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                <line x1="12" y1="22.08" x2="12" y2="12" />
+                            </svg>
+                        </span>
+                        <div className="dash-title-text" style={{ marginLeft: '10px' }}>
+                            <h2 className="dash-title" style={{ fontSize: '15px', marginBottom: '2px' }}>Stock Status</h2>
+                            <div className="dash-welcome" style={{ fontSize: '10.5px' }}>
+                                <span>Real-time vehicle inventory</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="ss-search-wrap">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
@@ -275,7 +292,7 @@ const StockStatus = () => {
                     </select>
 
                     <button className="ss-icon-btn ss-excel-btn" onClick={handleExcelDownload} title="Download Excel" disabled={filteredStocks.length === 0}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                             <polyline points="14 2 14 8 20 8" />
                             <line x1="16" y1="13" x2="8" y2="13" />
@@ -285,11 +302,17 @@ const StockStatus = () => {
                     </button>
 
                     <button className="ss-icon-btn ss-refresh-btn" onClick={fetchStocks} title="Refresh">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="23 4 23 10 17 10" />
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                         </svg>
                     </button>
+                    
+                    {userName && (
+                        <div className="topbar-avatar" onClick={onLogoutClick} title="Logout" style={{ marginLeft: '10px' }}>
+                            <span>{userName.charAt(0).toUpperCase()}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

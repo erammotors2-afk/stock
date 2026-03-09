@@ -102,35 +102,12 @@ const StockStatusPage = () => {
             />
 
             <main className="main">
-                <header className="topbar">
-                    <div className="topbar-left">
-                        <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)}>
-                            {icons.menu}
-                        </button>
-                        <div className="stylish-header">
-                            <div className="dash-title-row">
-                                <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
-                                    {icons.stockStatus}
-                                </span>
-                                <div className="dash-title-text">
-                                    <h2 className="dash-title">Stock Status</h2>
-                                    <div className="dash-welcome">
-                                        <span>Real-time vehicle inventory</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="topbar-right">
-                        <div className="topbar-avatar" onClick={handleLogoutClick} title="Logout">
-                            <span>{userName.charAt(0).toUpperCase()}</span>
-                        </div>
-                    </div>
-                </header>
-
-                <div className="content">
-                    <StockStatus />
+                <div className="content" style={{ padding: '10px 14px' }}>
+                    <StockStatus 
+                        onMenuClick={() => setMobileSidebar(true)}
+                        userName={userName}
+                        onLogoutClick={handleLogoutClick}
+                    />
                 </div>
             </main>
 
