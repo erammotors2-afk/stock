@@ -16,6 +16,7 @@ const Sidebar = ({
 }) => {
     const [expandedSubs, setExpandedSubs] = useState({});
     const [sidebarSearch, setSidebarSearch] = useState('');
+    const [showGeneral, setShowGeneral] = useState(false); // ★ New state for General menu toggle
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -457,11 +458,15 @@ const Sidebar = ({
 
             {/* ═══ BOTTOM ═══ */}
             <div className="sb-bottom">
-                {/* GENERAL */}
-                <span className="sb-label">
-                    {(sidebarOpen || mobileSidebar) ? 'GENERAL' : 'ℹ'}
-                </span>
-                {filterMenu(generalMenu).map(renderMenuItem)}
+                {/* GENERAL (Hidden behind toggle) */}
+                {showGeneral && (
+                    <>
+                        <span className="sb-label">
+                            {(sidebarOpen || mobileSidebar) ? 'GENERAL' : 'ℹ'}
+                        </span>
+                        {filterMenu(generalMenu).map(renderMenuItem)}
+                    </>
+                )}
 
                 {/* DARK MODE TOGGLE */}
                 <button
@@ -510,9 +515,9 @@ const Sidebar = ({
                     )}
                 </button>
 
-                {/* USER CARD */}
+                {/* USER CARD (Click to toggle GENERAL) */}
                 {(sidebarOpen || mobileSidebar) && (
-                    <div className="sb-user">
+                    <div className="sb-user" onClick={() => setShowGeneral(!showGeneral)} style={{ cursor: 'pointer' }} title="Click to show/hide General menu">
                         <div className="sb-avatar">
                             {userName.charAt(0).toUpperCase()}
                         </div>
