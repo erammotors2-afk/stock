@@ -123,7 +123,7 @@
 
 /* ═══ SIDEBAR ═══ */
 .sidebar {
-    width: 230px;
+    width: 280px;
     height: 100vh;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border);
@@ -407,7 +407,7 @@
 }
 
 .sb-label {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 800;
     color: var(--text-muted);
     letter-spacing: 1.5px;
@@ -434,7 +434,7 @@
     cursor: pointer;
     transition: all .2s;
     width: 100%;
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
     font-family: 'Inter', sans-serif;
     text-align: left;
@@ -466,8 +466,8 @@
 }
 
 .sb-icon {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -817,8 +817,8 @@
 }
 
 .dash-icon {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--red), #f97316);
     display: flex;
@@ -830,8 +830,8 @@
 }
 
 .dash-icon svg {
-    width: 17px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
     stroke: #fff;
 }
 
@@ -855,7 +855,7 @@
 
 .dash-title {
     font-family: 'Playfair Display', serif;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 900;
     background: linear-gradient(135deg, var(--red) 0%, #f97316 50%, #eab308 100%);
     -webkit-background-clip: text;
@@ -1998,6 +1998,9 @@ tr:hover td {
         left: 0;
     }
 
+    .sb-open .sidebar {
+        width: 280px;
+    }
     .sb-closed .sidebar {
         width: 260px;
         left: -280px;

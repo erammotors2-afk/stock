@@ -20,7 +20,7 @@
     gap: 8px;
     padding: 10px 18px;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
@@ -87,7 +87,7 @@
 
 .um-name-col strong {
     color: var(--text);
-    font-size: 13.5px;
+    font-size: 15.5px;
 }
 
 .um-name-col span {
@@ -183,7 +183,7 @@
 }
 
 .modal-fld label {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--text-sec);
 }
@@ -195,7 +195,7 @@
     color: var(--text);
     padding: 10px 14px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 15px;
     font-family: 'Inter', sans-serif;
     transition: border-color 0.3s;
     outline: none;

@@ -359,7 +359,7 @@
     border-collapse: separate;
     border-spacing: 0;
     /* ★ UNIFORM FONT SIZE FOR ALL */
-    font-size: 11.5px;
+    font-size: 14.5px;
     font-weight: 500;
     color: var(--text-sec);
 }
@@ -374,7 +374,7 @@
 .ss-table th {
     background: var(--bg-input);
     padding: 10px 12px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -399,7 +399,7 @@
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     /* ★ SAME FONT FOR ALL CELLS */
-    font-size: 11.5px;
+    font-size: 14.5px;
     font-weight: 500;
     color: var(--text-sec);
 }
