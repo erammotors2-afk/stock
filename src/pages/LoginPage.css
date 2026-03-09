@@ -1297,11 +1297,11 @@ html {
 /* ═══ HD GLASS CARD AREA ═══ */
 
 .lp-card-area {
-  flex: 0 0 clamp(280px, 32vw, 440px);
+  flex: 0 0 clamp(240px, 28vw, 380px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(16px, 2.5vw, 36px);
+  padding: clamp(12px, 2vw, 28px);
   animation: caIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
   opacity: 0;
 }
@@ -1333,14 +1333,14 @@ html {
 .glass-card {
   position: relative;
   width: 100%;
-  max-width: 370px;
+  max-width: 320px;
   background: rgba(30, 30, 38, 0.65);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: clamp(14px, 1.8vw, 18px);
-  padding: clamp(18px, 3vw, 26px) clamp(16px, 2.5vw, 22px);
+  border-radius: clamp(12px, 1.5vw, 16px);
+  padding: clamp(16px, 2.5vw, 22px) clamp(14px, 2vw, 20px);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   overflow: hidden;
 }
