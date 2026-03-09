@@ -91,7 +91,15 @@ const DeliveryPage = () => {
 
     const [deliveries, setDeliveries] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    
+    // Exact Stock Status UX states
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedDelivery, setSelectedDelivery] = useState(null);
+    const [showActionModal, setShowActionModal] = useState(false);
+    
+    const rowsPerPage = 100;
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -161,11 +169,130 @@ const DeliveryPage = () => {
 
     const cancelLogout = () => setShowLogoutModal(false);
 
-    const filteredDeliveries = deliveries.filter(d =>
-        d.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.invoice_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.chassis_no?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Exact filtering mimicking Stock Status
+    const filteredDeliveries = deliveries.filter(d => {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = !searchTerm ||
+            (d.customer_name || '').toLowerCase().includes(searchLower) ||
+            (d.invoice_no || '').toLowerCase().includes(searchLower) ||
+            (d.chassis_no || '').toLowerCase().includes(searchLower) ||
+            (d.dealer_location_code || '').toLowerCase().includes(searchLower) ||
+            (d.engine_no || '').toLowerCase().includes(searchLower);
+
+        const matchesStatus =
+            filterStatus === 'all' ||
+            (d.invoice_status || '').toLowerCase().includes(filterStatus.toLowerCase());
+
+        return matchesSearch && matchesStatus;
+    });
+
+    const totalPages = Math.ceil(filteredDeliveries.length / rowsPerPage) || 1;
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const paginatedDeliveries = filteredDeliveries.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus]);
+
+    const handleAction = (del) => {
+        setSelectedDelivery(del);
+        setShowActionModal(true);
+    };
+
+    const closeActionModal = () => {
+        setShowActionModal(false);
+        setSelectedDelivery(null);
+    };
+
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    };
+
+    const getPageNumbers = () => {
+        const pages = [];
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('...');
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+        return pages;
+    };
+
+    const handleExcelDownload = () => {
+        if (filteredDeliveries.length === 0) return;
+
+        const headers = ['SL No', ...DELIVERY_COLUMNS.map(col => col.label)];
+        const rows = filteredDeliveries.map((d, i) => [
+            i + 1,
+            ...DELIVERY_COLUMNS.map(col => d[col.key] || '-')
+        ]);
+
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+        xml += '<?mso-application progid="Excel.Sheet"?>';
+        xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"';
+        xml += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+        xml += '<Styles>';
+        xml += '<Style ss:ID="header"><Font ss:Bold="1" ss:Size="10"/>';
+        xml += '<Interior ss:Color="#F3F4F6" ss:Pattern="Solid"/></Style>';
+        xml += '<Style ss:ID="cell"><Font ss:Size="9"/></Style>';
+        xml += '</Styles>';
+        xml += '<Worksheet ss:Name="Delivery">';
+        xml += '<Table>';
+
+        headers.forEach(() => {
+            xml += '<Column ss:AutoFitWidth="1" ss:Width="110"/>';
+        });
+
+        xml += '<Row>';
+        headers.forEach(h => {
+            xml += `<Cell ss:StyleID="header"><Data ss:Type="String">${h}</Data></Cell>`;
+        });
+        xml += '</Row>';
+
+        rows.forEach(row => {
+            xml += '<Row>';
+            row.forEach((val, ci) => {
+                const type = (ci === 0) ? 'Number' : 'String';
+                const escaped = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                xml += `<Cell ss:StyleID="cell"><Data ss:Type="${type}">${escaped}</Data></Cell>`;
+            });
+            xml += '</Row>';
+        });
+
+        xml += '</Table></Worksheet></Workbook>';
+
+        const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Delivery_${new Date().toISOString().slice(0, 10)}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const deliveryCounts = {
+        total: filteredDeliveries.length,
+        pending: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('pending')).length,
+        delivered: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('delivered')).length,
+        cancelled: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('cancel')).length,
+    };
 
     return (
         <div className={`db ${darkMode ? 'dark' : 'light'} ${sidebarOpen && !mobileSidebar ? 'sb-open' : 'sb-closed'}`}>
@@ -186,27 +313,38 @@ const DeliveryPage = () => {
                 setDarkMode={setDarkMode}
             />
 
-            <div className="main">
-                {/* ═══ TOP NAV EXACTLY LIKE STOCK STATUS ═══ */}
-                <div className="topbar">
-                    <div className="topbar-left">
-                        <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="3" y1="12" x2="21" y2="12" />
-                                <line x1="3" y1="6" x2="21" y2="6" />
-                                <line x1="3" y1="18" x2="21" y2="18" />
-                            </svg>
-                        </button>
-                        <h1 className="dash-title">Delivery Status</h1>
-                    </div>
-                </div>
-
-                <div className="content">
+            <main className="main">
+                <div className="content" style={{ padding: '10px 14px' }}>
                     <div className="ss-container">
                         
-                        {/* ═══ FILTER BAR (Exactly like Stock Status) ═══ */}
-                        <div className="ss-filter-bar">
+                        {/* ═══ COMBINED HEADER & TOOLBAR ═══ */}
+                        <div className="ss-toolbar">
                             <div className="ss-toolbar-left">
+                                <div className="dash-title-row" style={{ marginRight: '15px' }}>
+                                    {/* Mobile menu button inline with title */}
+                                    <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)} style={{ marginRight: '10px', display: window.innerWidth <= 850 ? 'block' : 'none' }}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="3" y1="12" x2="21" y2="12" />
+                                            <line x1="3" y1="6" x2="21" y2="6" />
+                                            <line x1="3" y1="18" x2="21" y2="18" />
+                                        </svg>
+                                    </button>
+                                    <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #10b981, #047857)', width: '30px', height: '30px', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>
+                                    </span>
+                                    <div className="dash-title-text" style={{ marginLeft: '10px' }}>
+                                        <h2 className="dash-title" style={{ fontSize: '15px', marginBottom: '2px' }}>Delivery Status</h2>
+                                        <div className="dash-welcome" style={{ fontSize: '10.5px' }}>
+                                            <span>Real-time logistics view</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="ss-search-wrap">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                         <circle cx="11" cy="11" r="8" />
@@ -227,15 +365,49 @@ const DeliveryPage = () => {
                                         </button>
                                     )}
                                 </div>
+
                                 <div className="ss-mini-stats">
                                     <div className="ss-chip ss-chip-total">
                                         <span className="ss-chip-dot"></span>
                                         <span>Total</span>
-                                        <span className="ss-chip-num">{deliveries.length}</span>
+                                        <span className="ss-chip-num">{deliveryCounts.total.toLocaleString()}</span>
+                                    </div>
+                                    <div className="ss-chip ss-chip-free">
+                                        <span className="ss-chip-dot"></span>
+                                        <span>Pending</span>
+                                        <span className="ss-chip-num">{deliveryCounts.pending}</span>
+                                    </div>
+                                    <div className="ss-chip ss-chip-transit">
+                                        <span className="ss-chip-dot"></span>
+                                        <span>Delivered</span>
+                                        <span className="ss-chip-num">{deliveryCounts.delivered}</span>
+                                    </div>
+                                    <div className="ss-chip ss-chip-sold">
+                                        <span className="ss-chip-dot"></span>
+                                        <span>Cancelled</span>
+                                        <span className="ss-chip-num">{deliveryCounts.cancelled}</span>
                                     </div>
                                 </div>
                             </div>
+                            
                             <div className="ss-toolbar-right">
+                                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="ss-select">
+                                    <option value="all">All</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+
+                                <button className="ss-icon-btn ss-excel-btn" onClick={handleExcelDownload} title="Download Excel" disabled={filteredDeliveries.length === 0}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <line x1="16" y1="13" x2="8" y2="13" />
+                                        <line x1="16" y1="17" x2="8" y2="17" />
+                                        <polyline points="10 9 9 9 8 9" />
+                                    </svg>
+                                </button>
+
                                 <button className="ss-icon-btn ss-refresh-btn" onClick={fetchDeliveries} title="Refresh">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                         <polyline points="23 4 23 10 17 10" />
@@ -265,52 +437,161 @@ const DeliveryPage = () => {
                                     <p>No deliveries found</p>
                                 </div>
                             ) : (
-                                <div className="ss-table-wrap">
-                                    <table className="ss-table">
-                                        <thead>
-                                            <tr>
-                                                <th className="th-center">SL No</th>
-                                                {DELIVERY_COLUMNS.map(col => (
-                                                    <th key={col.key}>{col.label}</th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredDeliveries.map((delivery, idx) => (
-                                                <tr key={delivery.id || idx}>
-                                                    <td className="td-center">{idx + 1}</td>
-                                                    {DELIVERY_COLUMNS.map(col => {
-                                                        const val = delivery[col.key];
-                                                        
-                                                        // Apply specific formatting if needed
-                                                        if (col.key === 'chassis_no' || col.key === 'engine_no') {
-                                                            return <td key={col.key} className="mono">{val || '-'}</td>;
-                                                        }
-                                                        if (col.key === 'invoice_status') {
-                                                            return (
-                                                                <td key={col.key}>
-                                                                    <span className="ss-status-badge ss-status-free">
-                                                                        {val || 'PENDING'}
-                                                                    </span>
-                                                                </td>
-                                                            );
-                                                        }
-                                                        if (col.key.includes('date') && val) {
-                                                            return <td key={col.key}>{new Date(val).toLocaleDateString()}</td>;
-                                                        }
-
-                                                        return <td key={col.key}>{val || '-'}</td>;
-                                                    })}
+                                <>
+                                    <div className="ss-table-wrap">
+                                        <table className="ss-table">
+                                            <thead>
+                                                <tr>
+                                                    <th className="th-center">SL No</th>
+                                                    <th className="th-center">Action</th>
+                                                    {DELIVERY_COLUMNS.map(col => (
+                                                        <th key={col.key}>{col.label}</th>
+                                                    ))}
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                {paginatedDeliveries.map((delivery, idx) => (
+                                                    <tr key={delivery.id || idx}>
+                                                        <td className="td-center">{startIndex + idx + 1}</td>
+                                                        <td className="td-center">
+                                                            <button className="ss-action-btn" onClick={() => handleAction(delivery)} title="View">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <circle cx="12" cy="12" r="10" stroke="#10b981" />
+                                                                    <line x1="12" y1="8" x2="12" y2="12" stroke="#10b981" />
+                                                                    <line x1="12" y1="16" x2="12.01" y2="16" stroke="#047857" strokeWidth="3" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                        {DELIVERY_COLUMNS.map(col => {
+                                                            const val = delivery[col.key];
+                                                            
+                                                            if (col.key === 'chassis_no' || col.key === 'engine_no') {
+                                                                return <td key={col.key} className="mono">{val || '-'}</td>;
+                                                            }
+                                                            if (col.key === 'invoice_status') {
+                                                                return (
+                                                                    <td key={col.key}>
+                                                                        <span className="ss-status-badge ss-status-free">
+                                                                            {val || 'PENDING'}
+                                                                        </span>
+                                                                    </td>
+                                                                );
+                                                            }
+                                                            if (col.key.includes('date') && val) {
+                                                                return <td key={col.key}>{new Date(val).toLocaleDateString()}</td>;
+                                                            }
+
+                                                            return <td key={col.key}>{val || '-'}</td>;
+                                                        })}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    {/* PAGINATION */}
+                                    {totalPages > 1 && (
+                                        <div className="ss-pagination">
+                                            <span className="ss-pg-info">
+                                                {startIndex + 1}–{Math.min(endIndex, filteredDeliveries.length)} of <strong>{filteredDeliveries.length.toLocaleString()}</strong>
+                                            </span>
+                                            <div className="ss-pg-controls">
+                                                <button className="ss-pg-btn" onClick={() => goToPage(1)} disabled={currentPage === 1}>
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" /></svg>
+                                                </button>
+                                                <button className="ss-pg-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 18l-6-6 6-6" /></svg>
+                                                </button>
+                                                <div className="ss-pg-nums">
+                                                    {getPageNumbers().map((p, i) =>
+                                                        p === '...' ? <span key={`d${i}`} className="ss-pg-dots">…</span> :
+                                                            <button key={p} className={`ss-pg-num ${currentPage === p ? 'active' : ''}`} onClick={() => goToPage(p)}>{p}</button>
+                                                    )}
+                                                </div>
+                                                <button className="ss-pg-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 18l6-6-6-6" /></svg>
+                                                </button>
+                                                <button className="ss-pg-btn" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 17l5-5-5-5M6 17l5-5-5-5" /></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
+
+            {/* ═══ POPUP MODAL ═══ */}
+            {showActionModal && selectedDelivery && (
+                <div className="ss-overlay" onClick={closeActionModal}>
+                    <div className="ss-popup" onClick={e => e.stopPropagation()}>
+                        <div className="ss-popup-head">
+                            <div className="ss-popup-title">
+                                <span className="ss-popup-icon">🚚</span>
+                                <div>
+                                    <h4>{selectedDelivery.model_group || 'Delivery'}</h4>
+                                    <span className="ss-popup-sub">{selectedDelivery.invoice_no || '-'}</span>
+                                </div>
+                            </div>
+                            <button className="ss-popup-close" onClick={closeActionModal}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="ss-popup-body">
+                            <div className="ss-popup-tags">
+                                <span className="ss-stype stype-free">{selectedDelivery.invoice_status || 'Pending'}</span>
+                                <span className="ss-popup-tag">{selectedDelivery.color || '-'}</span>
+                                <span className="ss-popup-tag">{selectedDelivery.city || '-'}</span>
+                            </div>
+
+                            <div className="ss-popup-grid">
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Customer Name</span>
+                                    <span className="ss-popup-val">{selectedDelivery.customer_name || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Locality</span>
+                                    <span className="ss-popup-val">{selectedDelivery.locality || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">District</span>
+                                    <span className="ss-popup-val">{selectedDelivery.district || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Chassis</span>
+                                    <span className="ss-popup-val mono">{selectedDelivery.chassis_no || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Engine No</span>
+                                    <span className="ss-popup-val mono">{selectedDelivery.engine_no || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Model Variant</span>
+                                    <span className="ss-popup-val">{selectedDelivery.model_variant || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Model Code</span>
+                                    <span className="ss-popup-val">{selectedDelivery.model_code || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">SC Name</span>
+                                    <span className="ss-popup-val">{selectedDelivery.sc_name || '-'}</span>
+                                </div>
+                                <div className="ss-popup-row">
+                                    <span className="ss-popup-label">Financier</span>
+                                    <span className="ss-popup-val">{selectedDelivery.financier || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <LogoutModal
                 show={showLogoutModal}
