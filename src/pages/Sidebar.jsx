@@ -517,19 +517,17 @@ const Sidebar = ({
 
                 {/* USER CARD (Click to toggle GENERAL) */}
                 {(sidebarOpen || mobileSidebar) && (
-                    <div className="sb-user" onClick={() => setShowGeneral(!showGeneral)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} title="Click to show/hide General menu">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div className="sb-avatar">
-                                {userName.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="sb-user-info">
-                                <strong>{userName}</strong>
-                                <span className="sb-role-tag">
-                                    {userRole.toUpperCase()}
-                                </span>
-                            </div>
+                    <div className="sb-user" onClick={() => setShowGeneral(!showGeneral)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', width: '100%' }} title="Click to show/hide General menu">
+                        <div className="sb-avatar">
+                            {userName.charAt(0).toUpperCase()}
                         </div>
-                        <div style={{ color: 'var(--text-muted)', display: 'flex' }}>
+                        <div className="sb-user-info" style={{ flexGrow: 1 }}>
+                            <strong>{userName}</strong>
+                            <span className="sb-role-tag">
+                                {userRole.toUpperCase()}
+                            </span>
+                        </div>
+                        <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
