@@ -97,23 +97,37 @@ const RetailReportPage = () => {
             const from = (page - 1) * ROW_SIZE;
             const to = from + ROW_SIZE - 1;
 
-            let query = supabase
+            // ── Data query: only fetch current page ──
+            let dataQuery = supabase
                 .from('net_sale')
-                .select('*', { count: 'exact' })
+                .select('*')
                 .order('uploaded_at', { ascending: false })
                 .range(from, to);
 
             if (search) {
-                query = query.or(
+                dataQuery = dataQuery.or(
                     `customername.ilike.%${search}%,sapinvoiceno.ilike.%${search}%,dmsinvoicenumber.ilike.%${search}%,chassisnumber.ilike.%${search}%,engineno.ilike.%${search}%`
                 );
             }
 
-            const { data, error, count } = await query;
-            if (error) throw error;
+            // ── Count query: lightweight estimated count (no data transfer) ──
+            let countQuery = supabase
+                .from('net_sale')
+                .select('id', { count: 'estimated', head: true });
 
-            setRetailData(data || []);
-            setTotalCount(count || 0);
+            if (search) {
+                countQuery = countQuery.or(
+                    `customername.ilike.%${search}%,sapinvoiceno.ilike.%${search}%,dmsinvoicenumber.ilike.%${search}%,chassisnumber.ilike.%${search}%,engineno.ilike.%${search}%`
+                );
+            }
+
+            // Run both in parallel
+            const [dataResult, countResult] = await Promise.all([dataQuery, countQuery]);
+
+            if (dataResult.error) throw dataResult.error;
+
+            setRetailData(dataResult.data || []);
+            setTotalCount(countResult.count || 0);
         } catch (error) {
             console.error('Error fetching retail data from Supabase:', error);
         } finally {
