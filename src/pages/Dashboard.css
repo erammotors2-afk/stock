@@ -407,11 +407,11 @@
 }
 
 .sb-label {
-    font-size: 14px;
+    font-size: 9px;
     font-weight: 800;
     color: var(--text-muted);
     letter-spacing: 1.5px;
-    padding: 12px 10px 6px;
+    padding: 8px 10px 4px;
     display: block;
     white-space: nowrap;
     text-transform: uppercase;
