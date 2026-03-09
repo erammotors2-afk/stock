@@ -383,6 +383,35 @@
     white-space: nowrap;
     text-align: left;
     transition: color 0.2s;
+    vertical-align: bottom;
+}
+
+.ss-col-filter {
+    width: 100%;
+    min-width: 60px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 9.5px;
+    font-weight: 500;
+    margin-top: 6px;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.ss-col-filter:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.ss-col-filter::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
 }
 
 .ss-table th:hover {
