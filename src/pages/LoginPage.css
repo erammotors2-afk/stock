@@ -600,63 +600,6 @@ html {
 
 }
 
-/* 🚗 CAR ANIMATION 🚗 */
-.bg-car-wrap {
-  position: absolute;
-  bottom: 15%;
-  left: -200px;
-  width: 180px;
-  z-index: 5;
-  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
-  animation: carRun 12s linear infinite;
-  pointer-events: none;
-}
-
-.bg-car-svg {
-  width: 100%;
-  height: auto;
-}
-
-@keyframes carRun {
-  0% { transform: translateX(-20%) translateY(0); left: -200px; }
-  10% { transform: translateY(-2px); }
-  20% { transform: translateY(0); }
-  35% { transform: translateY(-1px); }
-  50% { transform: translateY(0); }
-  75% { transform: translateY(-2px); }
-  100% { transform: translateX(120vw) translateY(0); left: 100%; }
-}
-
-.car-wheel {
-  transform-origin: center;
-  animation: wheelSpin 0.6s linear infinite;
-}
-
-.wheel-front { transform-origin: 30px 36px; }
-.wheel-rear { transform-origin: 90px 36px; }
-
-@keyframes wheelSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.speed-line {
-  opacity: 0;
-  animation: speedLine 2s linear infinite;
-}
-
-.sl-1 { animation-delay: 0s; }
-.sl-2 { animation-delay: 0.5s; }
-.sl-3 { animation-delay: 1.2s; }
-
-@keyframes speedLine {
-  0% { transform: translateX(0); opacity: 0; }
-  50% { opacity: 0.6; }
-  100% { transform: translateX(-40px); opacity: 0; }
-}
-
-
-
 @keyframes orbDrift {
 
   0%,
@@ -1396,39 +1339,9 @@ html {
 
 
 .glass-card {
-
-  position: relative;
-
-  width: 100%;
-
-  max-width: 450px;
-
-  background: rgba(30, 30, 38, 0.65);
-
-  backdrop-filter: blur(25px);
-
-  -webkit-backdrop-filter: blur(25px);
-
-  border: 1px solid rgba(255, 255, 255, 0.06);
-
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-
-  border-radius: clamp(18px, 2.2vw, 24px);
-
-  padding: clamp(20px, 3.5vw, 34px) clamp(18px, 3vw, 28px);
-
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-
-  overflow: hidden;
-
-}
-
-
-
-.spl.glass-card {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 540px;
   background: rgba(30, 30, 38, 0.65);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);

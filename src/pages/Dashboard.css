@@ -855,7 +855,7 @@
 
 .dash-title {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 900;
     background: linear-gradient(135deg, var(--red) 0%, #f97316 50%, #eab308 100%);
     -webkit-background-clip: text;
@@ -881,7 +881,7 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 800;
-    font-size: 12.5px;
+    font-size: 14.5px;
 }
 
 .dash-wave {
