@@ -13,6 +13,7 @@ const DELIVERY_COLUMNS = [
     { key: 'invoice_date', label: 'Invoice Date' },
     { key: 'dealer_parent_code', label: 'Dealer Parent Code' },
     { key: 'dealer_location_code', label: 'Dealer Location Code' },
+    { key: 'location', label: 'Location' },
     { key: 'dealer_name', label: 'Dealer Name' },
     { key: 'sc_code', label: 'SC Code' },
     { key: 'sc_name', label: 'SC Name' },
@@ -78,6 +79,19 @@ const DELIVERY_COLUMNS = [
     { key: 'upload_date', label: 'Upload Date' }
 ];
 
+const getLocationFromCode = (code) => {
+    const c = (code || '').toUpperCase();
+    switch (c) {
+        case 'IT05': case 'IT29': case 'IT12': case 'IT37': return 'PALAKKAD - SR';
+        case 'IT02': return 'THRISSUR';
+        case 'IT01': case 'IT08': return 'CALICUT';
+        case 'IT26': return 'MALLAPURAM_MADB';
+        case 'IT19': return 'KASARGOD_MADB';
+        case 'IT07': return 'KANNUR';
+        default: return '-';
+    }
+};
+
 const DeliveryPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [mobileSidebar, setMobileSidebar] = useState(false);
@@ -91,14 +105,8 @@ const DeliveryPage = () => {
 
     const [deliveries, setDeliveries] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    
-    // Exact Stock Status UX states
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedDelivery, setSelectedDelivery] = useState(null);
-    const [showActionModal, setShowActionModal] = useState(false);
-    
     const rowsPerPage = 100;
 
     useEffect(() => {
@@ -146,10 +154,17 @@ const DeliveryPage = () => {
             const { data, error } = await supabase
                 .from('delivery')
                 .select('*')
-                .limit(100);
+                .order('upload_date', { ascending: false });
 
             if (error) throw error;
-            setDeliveries(data || []);
+            
+            const rawData = data || [];
+            const processedData = rawData.map(d => ({
+                ...d,
+                location: getLocationFromCode(d.dealer_location_code)
+            }));
+            
+            setDeliveries(processedData);
         } catch (error) {
             console.error('Error fetching deliveries from Supabase:', error);
         } finally {
@@ -169,21 +184,24 @@ const DeliveryPage = () => {
 
     const cancelLogout = () => setShowLogoutModal(false);
 
-    // Exact filtering mimicking Stock Status
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr.toLowerCase() === 'null') return '-';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
     const filteredDeliveries = deliveries.filter(d => {
         const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = !searchTerm ||
+        return !searchTerm ||
             (d.customer_name || '').toLowerCase().includes(searchLower) ||
             (d.invoice_no || '').toLowerCase().includes(searchLower) ||
             (d.chassis_no || '').toLowerCase().includes(searchLower) ||
             (d.dealer_location_code || '').toLowerCase().includes(searchLower) ||
             (d.engine_no || '').toLowerCase().includes(searchLower);
-
-        const matchesStatus =
-            filterStatus === 'all' ||
-            (d.invoice_status || '').toLowerCase().includes(filterStatus.toLowerCase());
-
-        return matchesSearch && matchesStatus;
     });
 
     const totalPages = Math.ceil(filteredDeliveries.length / rowsPerPage) || 1;
@@ -193,17 +211,7 @@ const DeliveryPage = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filterStatus]);
-
-    const handleAction = (del) => {
-        setSelectedDelivery(del);
-        setShowActionModal(true);
-    };
-
-    const closeActionModal = () => {
-        setShowActionModal(false);
-        setSelectedDelivery(null);
-    };
+    }, [searchTerm]);
 
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -239,7 +247,11 @@ const DeliveryPage = () => {
         const headers = ['SL No', ...DELIVERY_COLUMNS.map(col => col.label)];
         const rows = filteredDeliveries.map((d, i) => [
             i + 1,
-            ...DELIVERY_COLUMNS.map(col => d[col.key] || '-')
+            ...DELIVERY_COLUMNS.map(col => {
+                const val = d[col.key];
+                if (col.key.includes('date') && val) return formatDate(val);
+                return val || '-';
+            })
         ]);
 
         let xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -287,13 +299,6 @@ const DeliveryPage = () => {
         URL.revokeObjectURL(url);
     };
 
-    const deliveryCounts = {
-        total: filteredDeliveries.length,
-        pending: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('pending')).length,
-        delivered: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('delivered')).length,
-        cancelled: filteredDeliveries.filter(d => (d.invoice_status || '').toLowerCase().includes('cancel')).length,
-    };
-
     return (
         <div className={`db ${darkMode ? 'dark' : 'light'} ${sidebarOpen && !mobileSidebar ? 'sb-open' : 'sb-closed'}`}>
 
@@ -316,7 +321,6 @@ const DeliveryPage = () => {
             <main className="main">
                 <div className="content" style={{ padding: '10px 14px' }}>
                     <div className="ss-container">
-                        
                         {/* ═══ COMBINED HEADER & TOOLBAR ═══ */}
                         <div className="ss-toolbar">
                             <div className="ss-toolbar-left">
@@ -370,34 +374,12 @@ const DeliveryPage = () => {
                                     <div className="ss-chip ss-chip-total">
                                         <span className="ss-chip-dot"></span>
                                         <span>Total</span>
-                                        <span className="ss-chip-num">{deliveryCounts.total.toLocaleString()}</span>
-                                    </div>
-                                    <div className="ss-chip ss-chip-free">
-                                        <span className="ss-chip-dot"></span>
-                                        <span>Pending</span>
-                                        <span className="ss-chip-num">{deliveryCounts.pending}</span>
-                                    </div>
-                                    <div className="ss-chip ss-chip-transit">
-                                        <span className="ss-chip-dot"></span>
-                                        <span>Delivered</span>
-                                        <span className="ss-chip-num">{deliveryCounts.delivered}</span>
-                                    </div>
-                                    <div className="ss-chip ss-chip-sold">
-                                        <span className="ss-chip-dot"></span>
-                                        <span>Cancelled</span>
-                                        <span className="ss-chip-num">{deliveryCounts.cancelled}</span>
+                                        <span className="ss-chip-num">{filteredDeliveries.length.toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>
                             
                             <div className="ss-toolbar-right">
-                                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="ss-select">
-                                    <option value="all">All</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-
                                 <button className="ss-icon-btn ss-excel-btn" onClick={handleExcelDownload} title="Download Excel" disabled={filteredDeliveries.length === 0}>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
@@ -443,7 +425,6 @@ const DeliveryPage = () => {
                                             <thead>
                                                 <tr>
                                                     <th className="th-center">SL No</th>
-                                                    <th className="th-center">Action</th>
                                                     {DELIVERY_COLUMNS.map(col => (
                                                         <th key={col.key}>{col.label}</th>
                                                     ))}
@@ -453,15 +434,6 @@ const DeliveryPage = () => {
                                                 {paginatedDeliveries.map((delivery, idx) => (
                                                     <tr key={delivery.id || idx}>
                                                         <td className="td-center">{startIndex + idx + 1}</td>
-                                                        <td className="td-center">
-                                                            <button className="ss-action-btn" onClick={() => handleAction(delivery)} title="View">
-                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <circle cx="12" cy="12" r="10" stroke="#10b981" />
-                                                                    <line x1="12" y1="8" x2="12" y2="12" stroke="#10b981" />
-                                                                    <line x1="12" y1="16" x2="12.01" y2="16" stroke="#047857" strokeWidth="3" />
-                                                                </svg>
-                                                            </button>
-                                                        </td>
                                                         {DELIVERY_COLUMNS.map(col => {
                                                             const val = delivery[col.key];
                                                             
@@ -478,7 +450,7 @@ const DeliveryPage = () => {
                                                                 );
                                                             }
                                                             if (col.key.includes('date') && val) {
-                                                                return <td key={col.key}>{new Date(val).toLocaleDateString()}</td>;
+                                                                return <td key={col.key}>{formatDate(val)}</td>;
                                                             }
 
                                                             return <td key={col.key}>{val || '-'}</td>;
@@ -524,79 +496,10 @@ const DeliveryPage = () => {
                 </div>
             </main>
 
-            {/* ═══ POPUP MODAL ═══ */}
-            {showActionModal && selectedDelivery && (
-                <div className="ss-overlay" onClick={closeActionModal}>
-                    <div className="ss-popup" onClick={e => e.stopPropagation()}>
-                        <div className="ss-popup-head">
-                            <div className="ss-popup-title">
-                                <span className="ss-popup-icon">🚚</span>
-                                <div>
-                                    <h4>{selectedDelivery.model_group || 'Delivery'}</h4>
-                                    <span className="ss-popup-sub">{selectedDelivery.invoice_no || '-'}</span>
-                                </div>
-                            </div>
-                            <button className="ss-popup-close" onClick={closeActionModal}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="ss-popup-body">
-                            <div className="ss-popup-tags">
-                                <span className="ss-stype stype-free">{selectedDelivery.invoice_status || 'Pending'}</span>
-                                <span className="ss-popup-tag">{selectedDelivery.color || '-'}</span>
-                                <span className="ss-popup-tag">{selectedDelivery.city || '-'}</span>
-                            </div>
-
-                            <div className="ss-popup-grid">
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Customer Name</span>
-                                    <span className="ss-popup-val">{selectedDelivery.customer_name || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Locality</span>
-                                    <span className="ss-popup-val">{selectedDelivery.locality || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">District</span>
-                                    <span className="ss-popup-val">{selectedDelivery.district || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Chassis</span>
-                                    <span className="ss-popup-val mono">{selectedDelivery.chassis_no || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Engine No</span>
-                                    <span className="ss-popup-val mono">{selectedDelivery.engine_no || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Model Variant</span>
-                                    <span className="ss-popup-val">{selectedDelivery.model_variant || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Model Code</span>
-                                    <span className="ss-popup-val">{selectedDelivery.model_code || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">SC Name</span>
-                                    <span className="ss-popup-val">{selectedDelivery.sc_name || '-'}</span>
-                                </div>
-                                <div className="ss-popup-row">
-                                    <span className="ss-popup-label">Financier</span>
-                                    <span className="ss-popup-val">{selectedDelivery.financier || '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <LogoutModal
                 show={showLogoutModal}
-                onConfirm={confirmLogout}
                 onCancel={cancelLogout}
+                onConfirm={confirmLogout}
             />
         </div>
     );
