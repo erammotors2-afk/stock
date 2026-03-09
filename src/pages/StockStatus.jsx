@@ -265,18 +265,22 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
                     <div className="ss-mini-stats">
                         <div className="ss-chip ss-chip-total">
                             <span className="ss-chip-dot"></span>
+                            <span>Total</span>
                             <span className="ss-chip-num">{stockCounts.total.toLocaleString()}</span>
                         </div>
                         <div className="ss-chip ss-chip-free">
                             <span className="ss-chip-dot"></span>
+                            <span>Free</span>
                             <span className="ss-chip-num">{stockCounts.free}</span>
                         </div>
                         <div className="ss-chip ss-chip-allot">
                             <span className="ss-chip-dot"></span>
+                            <span>Allot</span>
                             <span className="ss-chip-num">{stockCounts.allotted}</span>
                         </div>
                         <div className="ss-chip ss-chip-transit">
                             <span className="ss-chip-dot"></span>
+                            <span>Transit</span>
                             <span className="ss-chip-num">{stockCounts.transit}</span>
                         </div>
                     </div>
