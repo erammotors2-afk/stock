@@ -6,6 +6,7 @@ import UserManagementPage from './pages/UserManagementPage';
 import StockStatusPage from './pages/StockStatusPage';
 import Sidebar from './pages/Sidebar';
 import DeliveryPage from './pages/DeliveryPage';
+import RetailReportPage from './pages/RetailReportPage';
 
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -71,6 +72,10 @@ function App() {
 
         <Route path="/delivery" element={
           <ProtectedRoute><DeliveryPage /></ProtectedRoute>
+        } />
+
+        <Route path="/retail-report" element={
+          <ProtectedRoute><RetailReportPage /></ProtectedRoute>
         } />
 
         {/* Catch all - redirect to dashboard */}
