@@ -661,6 +661,40 @@
     margin-top: 1px;
 }
 
+/* ═══ SIDEBAR DARK MODE TOGGLE ═══ */
+.sb-darkmode-toggle {
+    border-radius: 8px;
+}
+
+.sb-darkmode-toggle:hover {
+    background: var(--bg-hover);
+}
+
+.sb-darkmode-toggle.is-dark .sb-icon svg {
+    stroke: #93c5fd;
+}
+
+.sb-dm-badge {
+    margin-left: auto;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.dm-on {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.dm-off {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
 /* ═══ MAIN ═══ */
 .main {
     flex: 1;
