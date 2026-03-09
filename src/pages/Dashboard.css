@@ -123,7 +123,7 @@
 
 /* ═══ SIDEBAR ═══ */
 .sidebar {
-    width: 220px;
+    width: 200px;
     height: 100vh;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border);
@@ -855,7 +855,7 @@
 
 .dash-title {
     font-family: 'Playfair Display', serif;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 900;
     background: linear-gradient(135deg, var(--red) 0%, #f97316 50%, #eab308 100%);
     -webkit-background-clip: text;
