@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './Dashboard';
-import { supabase } from '../supabase';
 import './DeliveryPage.css';
 
 const DeliveryPage = ({ user, handleLogoutClick, darkMode, setDarkMode }) => {
@@ -15,15 +14,14 @@ const DeliveryPage = ({ user, handleLogoutClick, darkMode, setDarkMode }) => {
     const fetchDeliveries = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('delivery')
-                .select('*')
-                .limit(100);
-
-            if (error) throw error;
+            const response = await fetch('https://api.erammotors.in/api/delivery');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
             setDeliveries(data || []);
         } catch (error) {
-            console.error('Error fetching deliveries:', error);
+            console.error('Error fetching deliveries from Cloudflare:', error);
         } finally {
             setIsLoading(false);
         }
