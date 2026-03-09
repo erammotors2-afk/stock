@@ -123,7 +123,7 @@
 
 /* ═══ SIDEBAR ═══ */
 .sidebar {
-    width: 250px;
+    width: 220px;
     height: 100vh;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border);
@@ -302,12 +302,12 @@
 .sb-search-inner {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 7px 10px;
+    padding: 4px 8px;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
