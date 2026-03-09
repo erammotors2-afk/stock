@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css'; // Uses your dedicated CSS file
-import { supabase } from '../config/supabaseClient';
 import bcrypt from 'bcryptjs';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://eram-stock-api.erammotors2.workers.dev';
 
 const UserManagement = () => {
     const [usersList, setUsersList] = useState([]);
@@ -28,14 +29,9 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         setIsFetchingUsers(true);
         try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('id, username, full_name, email, role, cluster, status, created_at')
-                .order('created_at', { ascending: false });
-
-            if (!error && data) {
-                setUsersList(data);
-            }
+            const res = await fetch(`${API_URL}/api/users`);
+            const json = await res.json();
+            if (json.success) setUsersList(json.data);
         } catch (err) {
             console.error("Error fetching users:", err);
         } finally {
@@ -54,20 +50,20 @@ const UserManagement = () => {
         if (!user) return;
 
         const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
-        const newIsActive = newStatus === 'Active';
 
         try {
-            const { error } = await supabase
-                .from('users')
-                .update({ status: newStatus, is_active: newIsActive, updated_at: new Date().toISOString() })
-                .eq('id', user.id);
+            const res = await fetch(`${API_URL}/api/users/${user.id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            const json = await res.json();
 
-            if (!error) {
+            if (json.success) {
                 setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
-                // Close the cute modal
                 setStatusConfirm({ show: false, user: null });
             } else {
-                alert('Failed to update user status.');
+                alert('Failed to update user status: ' + json.error);
             }
         } catch (err) {
             console.error("Status update error:", err);
@@ -81,42 +77,22 @@ const UserManagement = () => {
         setIsAddingUser(true);
 
         try {
-            if (newUser.username.length < 3) throw new Error("Username must be at least 3 characters.");
-            if (newUser.password.length < 6) throw new Error("Password must be at least 6 characters.");
-            if (!newUser.cluster) throw new Error("Please select a cluster.");
-
-            const { data: existing } = await supabase
-                .from('users')
-                .select('id')
-                .or(`username.ilike.${newUser.username.trim()},email.eq.${newUser.email.trim()}`)
-                .maybeSingle();
-
-            if (existing) throw new Error("Username or Email already exists.");
-
-            // Secure Hash Password
-            const salt = bcrypt.genSaltSync(10);
-            const hashedPassword = bcrypt.hashSync(newUser.password, salt);
-
-            const { data, error } = await supabase
-                .from('users')
-                .insert([{
+            const res = await fetch(`${API_URL}/api/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     username: newUser.username.trim(),
                     full_name: newUser.full_name.trim(),
                     email: newUser.email.trim(),
-                    password_hash: hashedPassword,
+                    password: newUser.password,
                     role: newUser.role,
                     cluster: newUser.cluster,
-                    status: 'Active',
-                    is_active: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }])
-                .select('id, username, full_name, email, role, cluster, status, created_at')
-                .single();
+                }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Failed to create user.');
 
-            if (error) throw error;
-
-            setUsersList([data, ...usersList]);
+            setUsersList([json.user, ...usersList]);
             setUserFormSuccess("User successfully created!");
 
             setTimeout(() => {
@@ -131,6 +107,7 @@ const UserManagement = () => {
             setIsAddingUser(false);
         }
     };
+
 
     return (
         <div className="um-container">
