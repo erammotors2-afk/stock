@@ -198,20 +198,40 @@ const Sidebar = ({
     const mainMenu = [
         { id: 'dashboard', label: 'Dashboard', icon: icons.dashboard, roles: ['user', 'head', 'admin'], color: 'red', path: '/dashboard' },
         { id: 'stockStatus', label: 'Stock Status', icon: icons.stockStatus, roles: ['user', 'head', 'admin'], color: 'blue', path: '/stock-status' },
+        { id: 'billing', label: 'Billing', icon: icons.billing, roles: ['user', 'head', 'admin'], color: 'purple', path: '/billing' },
         { id: 'delivery', label: 'Delivery', icon: icons.delivery, roles: ['user', 'head', 'admin'], color: 'orange', path: '/delivery' },
+        { id: 'cancellation', label: 'Cancellation', icon: icons.cancel, roles: ['user', 'head', 'admin'], color: 'pink', path: '/cancellation' },
+        { id: 'sapIbnd', label: 'SAP IBND', icon: icons.sapIbnd, roles: ['user', 'head', 'admin'], color: 'teal', path: '/sap-ibnd' },
+        { id: 'sapDoneDms', label: 'SAP Done DMS Pend', icon: icons.sapDone, roles: ['user', 'head', 'admin'], color: 'indigo', path: '/sap-done-dms' },
+        { id: 'pendingList', label: 'Pending List', icon: icons.pending, roles: ['user', 'head', 'admin'], color: 'yellow', path: '/pending-list' },
+        { id: 'approvedList', label: 'Approved List', icon: icons.approved, roles: ['user', 'head', 'admin'], color: 'cyan', path: '/approved-list' },
     ];
 
     const reportsMenu = [
         {
+            id: 'pBooking', label: 'P-Booking', icon: icons.pBooking, roles: ['user', 'head', 'admin'], color: 'violet',
+            children: [
+                { id: 'bookingList', label: 'Booking List', icon: icons.bookingList, roles: ['user', 'head', 'admin'], path: '/booking-list' },
+                { id: 'bookingSummary', label: 'Summary', icon: icons.summary, roles: ['user', 'head', 'admin'], path: '/booking-summary' },
+            ]
+        },
+        {
             id: 'sapRetail', label: 'SAP Retail', icon: icons.sapRetail, roles: ['user', 'head', 'admin'], color: 'lime',
             children: [
                 { id: 'retailReport', label: 'Retail Report', icon: icons.sapRetail, roles: ['user', 'head', 'admin'], path: '/retail-report' },
+                { id: 'retailSummary', label: 'Summary', icon: icons.summary, roles: ['user', 'head', 'admin'], path: '/retail-summary' },
             ]
         },
+        { id: 'dmsRetail', label: 'DMS Retail', icon: icons.dmsRetail, roles: ['user', 'head', 'admin'], color: 'rose', path: '/dms-retail' },
+        { id: 'analytics', label: 'Analytics', icon: icons.analytics, roles: ['user', 'head', 'admin'], color: 'emerald', path: '/analytics' },
     ];
 
     const managementMenu = [
         { id: 'userMgmt', label: 'User Management', icon: icons.userMgmt, roles: ['admin'], badge: 'Admin', color: 'amber', path: '/user-management' },
+        { id: 'actionLogs', label: 'Action Logs', icon: icons.logs, roles: ['admin'], badge: 'Admin', color: 'fuchsia', path: '/action-logs' },
+        { id: 'notifications', label: 'Notifications', icon: icons.notifications, roles: ['head', 'admin'], badge: 'Head+', color: 'blue', path: '/notifications' },
+        { id: 'action', label: 'Action', icon: icons.action, roles: ['head', 'admin'], badge: 'Head+', color: 'red', path: '/action' },
+        { id: 'changeRequest', label: 'Change Request', icon: icons.changeReq, roles: ['head', 'admin'], badge: 'Head+', color: 'green', path: '/change-request' },
     ];
 
     const generalMenu = [
