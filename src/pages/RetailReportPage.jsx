@@ -57,6 +57,7 @@ const RetailReportPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
@@ -381,3 +382,5 @@ const RetailReportPage = () => {
 };
 
 export default RetailReportPage;
+
+

@@ -109,6 +109,7 @@ const DeliveryPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const rowsPerPage = 100;
 
     useEffect(() => {
@@ -510,3 +511,5 @@ const DeliveryPage = () => {
 };
 
 export default DeliveryPage;
+
+

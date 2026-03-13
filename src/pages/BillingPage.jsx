@@ -26,6 +26,7 @@ const BillingPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -84,11 +85,48 @@ const BillingPage = () => {
         return columns.some(col => String(row[col] || '').toLowerCase().includes(s));
     });
 
-    const totalPages = Math.ceil(filteredData.length / ROW_SIZE) || 1;
+    const sortedData = React.useMemo(() => {
+        let sortableItems = [...filteredData];
+        if (sortConfig !== null && sortConfig.key) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+                
+                // Handle nulls
+                if (aValue === null || aValue === undefined) aValue = '';
+                if (bValue === null || bValue === undefined) bValue = '';
+                
+                // Handle numbers
+                if (!isNaN(aValue) && !isNaN(bValue) && aValue !== '' && bValue !== '') {
+                    return sortConfig.direction === 'asc' 
+                        ? Number(aValue) - Number(bValue)
+                        : Number(bValue) - Number(aValue);
+                }
+                
+                // Handle strings
+                aValue = String(aValue).toLowerCase();
+                bValue = String(bValue).toLowerCase();
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredData, sortConfig]);
+
+    const totalPages = Math.ceil(sortedData.length / ROW_SIZE) || 1;
     const startIndex = (currentPage - 1) * ROW_SIZE;
-    const paginatedData = filteredData.slice(startIndex, startIndex + ROW_SIZE);
+    const paginatedData = sortedData.slice(startIndex, startIndex + ROW_SIZE);
 
     useEffect(() => { setCurrentPage(1); }, [searchTerm]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const goToPage = (page) => { if (page >= 1 && page <= totalPages) setCurrentPage(page); };
 
@@ -166,7 +204,21 @@ const BillingPage = () => {
                             : (<>
                                 <div className="ss-table-wrap">
                                     <table className="ss-table">
-                                        <thead><tr><th className="th-center">SL No</th>{columns.map(col => (<th key={col}>{formatHeader(col)}</th>))}</tr></thead>
+                                        <thead>
+                                            <tr>
+                                                <th className="th-center">SL No</th>
+                                                {columns.map(col => (
+                                                    <th key={col} onClick={() => requestSort(col)} style={{ cursor: 'pointer' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            {formatHeader(col)}
+                                                            <span style={{ opacity: sortConfig.key === col ? 1 : 0.3, fontSize: '10px', marginLeft: '4px' }}>
+                                                                {sortConfig.key === col && sortConfig.direction === 'desc' ? '▼' : '▲'}
+                                                            </span>
+                                                        </div>
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
                                         <tbody>
                                             {paginatedData.map((row, idx) => (
                                                 <tr key={row.id || idx}>

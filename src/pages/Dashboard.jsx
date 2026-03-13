@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import LogoutModal from './LogoutModal';
 import useDarkMode from '../hooks/useDarkMode';
+import { supabase } from '../config/supabaseClient';
 
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -15,6 +16,7 @@ const Dashboard = () => {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [userRole, setUserRole] = useState('user');
     const [userName, setUserName] = useState('');
+    const [onlineUsers, setOnlineUsers] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -54,6 +56,28 @@ const Dashboard = () => {
             events.forEach(event => window.removeEventListener(event, resetTimer));
         };
     }, [navigate]);
+
+    useEffect(() => {
+        if (userRole === 'admin' || userRole === 'head') {
+            const channel = supabase.channel('online-users');
+
+            channel.on('presence', { event: 'sync' }, () => {
+                const state = channel.presenceState();
+                const users = [];
+                // Flatten the presence state into a simple array of unique users
+                for (const id in state) {
+                    if (state[id] && state[id].length > 0) {
+                        users.push(state[id][0]);
+                    }
+                }
+                setOnlineUsers(users);
+            }).subscribe();
+
+            return () => {
+                channel.unsubscribe();
+            };
+        }
+    }, [userRole]);
 
     const handleLogoutClick = () => {
         setShowLogoutModal(true);
@@ -210,6 +234,27 @@ const Dashboard = () => {
                             {icons.search}
                             <input type="text" placeholder="Search vehicles, orders..." />
                         </div>
+                        
+                        {(userRole === 'admin' || userRole === 'head') && (
+                            <div className="online-users-pill" title="Online Users">
+                                <span className="online-dot"></span>
+                                <span className="online-count">{onlineUsers.length} Online</span>
+                                <div className="online-users-dropdown">
+                                    <div className="ou-header">Active Users</div>
+                                    <div className="ou-list">
+                                        {onlineUsers.length > 0 ? onlineUsers.map((u, i) => (
+                                            <div key={i} className="ou-item">
+                                                <div className="ou-avatar">{u.username ? u.username.charAt(0).toUpperCase() : '?'}</div>
+                                                <div className="ou-info">
+                                                    <span className="ou-name">{u.username || 'User'}</span>
+                                                    <span className="ou-role">{u.role || 'user'}</span>
+                                                </div>
+                                            </div>
+                                        )) : <div className="ou-empty">No other users online</div>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <button className="topbar-icon-btn" title="Notifications">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

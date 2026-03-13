@@ -15,6 +15,8 @@ import PBookingPage from './pages/PBookingPage';
 import EmpDataPage from './pages/EmpDataPage';
 import FtdRetailPage from './pages/FtdRetailPage';
 import ShieldPage from './pages/ShieldPage';
+import CancellationPage from './pages/CancellationPage';
+import { supabase } from './config/supabaseClient';
 
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,6 +33,39 @@ const ProtectedRoute = ({ children }) => {
     }
     setIsAuthenticated(isValid);
     setTimeout(() => setLoading(false), 500);
+
+    // Track User Online Status
+    if (isValid && user) {
+        try {
+            const parsedUser = JSON.parse(user);
+            const channel = supabase.channel('online-users', {
+                config: {
+                    presence: {
+                        key: parsedUser.username || parsedUser.full_name || 'unknown'
+                    }
+                }
+            });
+
+            channel.on('presence', { event: 'sync' }, () => {
+                // Handled in components that need to see online users
+            }).subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await channel.track({
+                        user_id: parsedUser.id,
+                        username: parsedUser.username || parsedUser.full_name,
+                        role: parsedUser.role,
+                        online_at: new Date().toISOString(),
+                    });
+                }
+            });
+
+            return () => {
+                channel.unsubscribe();
+            };
+        } catch (err) {
+            console.error(err);
+        }
+    }
   }, []);
 
   if (loading) {
@@ -123,6 +158,10 @@ function App() {
 
         <Route path="/shield" element={
           <ProtectedRoute><ShieldPage /></ProtectedRoute>
+        } />
+
+        <Route path="/cancellation" element={
+          <ProtectedRoute><CancellationPage /></ProtectedRoute>
         } />
 
         {/* Catch all - redirect to dashboard */}

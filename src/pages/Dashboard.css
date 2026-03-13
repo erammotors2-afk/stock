@@ -129,7 +129,7 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    transition: width .6s cubic-bezier(0.4, 0, 0.2, 1), background .4s;
+    transition: width .2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 1000;
     flex-shrink: 0;
@@ -255,7 +255,6 @@
     align-items: center;
     margin: 12px 8px 0;
     border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -432,7 +431,6 @@
     background: transparent;
     color: var(--text-sec);
     cursor: pointer;
-    transition: all .2s;
     width: 100%;
     font-size: 12px;
     font-weight: 500;
@@ -604,7 +602,7 @@
 .sb-submenu {
     max-height: 0;
     overflow: hidden;
-    transition: max-height .5s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s;
+    transition: max-height .3s ease-out, opacity .2s;
     opacity: 0;
     padding: 0 0 0 12px;
     background: var(--sub-bg);
@@ -628,7 +626,6 @@
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all .2s;
     width: 100%;
     font-size: 13.5px;
     font-weight: 500;
@@ -789,7 +786,6 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
     color: var(--text) !important;
 }
 
@@ -1111,6 +1107,152 @@
     justify-content: center;
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
     border: 2px solid var(--bg-card);
+}
+
+/* ═══ ONLINE USERS PILL ═══ */
+.online-users-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.online-users-pill:hover {
+    background: var(--bg-hover);
+    border-color: var(--green);
+}
+
+.online-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+    animation: pulse-green 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: .5;
+        transform: scale(0.8);
+    }
+}
+
+.online-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.online-users-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 240px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.online-users-pill:hover .online-users-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.ou-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ou-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ou-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ou-list::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 2px;
+}
+
+.ou-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.ou-item:hover {
+    background: var(--bg-hover);
+}
+
+.ou-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--green), #15803d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.ou-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ou-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ou-role {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.ou-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-muted);
 }
 
 .topbar-avatar {

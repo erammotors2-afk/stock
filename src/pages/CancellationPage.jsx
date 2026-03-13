@@ -9,12 +9,12 @@ import { supabase } from '../config/supabaseClient';
 
 const ROW_SIZE = 100;
 
-const BookingListPage = () => {
+const CancellationPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(() => {
         try { const p = localStorage.getItem('userPreferences'); return p ? !!JSON.parse(p).sidebarDefaultOpen : false; } catch { return false; }
     });
     const [mobileSidebar, setMobileSidebar] = useState(false);
-    const [activeMenu, setActiveMenu] = useState('bookingList');
+    const [activeMenu, setActiveMenu] = useState('cancellation');
     const [darkMode, setDarkMode] = useDarkMode();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [userRole, setUserRole] = useState('user');
@@ -52,7 +52,7 @@ const BookingListPage = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase.from('booking').select('*').order('id', { ascending: false }).limit(5000);
+            const { data, error } = await supabase.from('cancellation').select('*').order('id', { ascending: false }).limit(5000);
             if (error) throw error;
             const rows = data || [];
             if (rows.length > 0) {
@@ -60,7 +60,7 @@ const BookingListPage = () => {
                 setColumns(cols);
             }
             setTableData(rows);
-        } catch (error) { console.error('Error fetching booking data:', error); }
+        } catch (error) { console.error('Error fetching cancellation data:', error); }
         finally { setIsLoading(false); }
     };
 
@@ -76,6 +76,7 @@ const BookingListPage = () => {
         if (isNaN(d.getTime())) return dateStr;
         return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
     };
+
     const formatHeader = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     const filteredData = tableData.filter(row => {
@@ -87,7 +88,9 @@ const BookingListPage = () => {
     const totalPages = Math.ceil(filteredData.length / ROW_SIZE) || 1;
     const startIndex = (currentPage - 1) * ROW_SIZE;
     const paginatedData = filteredData.slice(startIndex, startIndex + ROW_SIZE);
+
     useEffect(() => { setCurrentPage(1); }, [searchTerm]);
+
     const requestSort = (key) => {
         let direction = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
@@ -112,14 +115,14 @@ const BookingListPage = () => {
         let xml = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>';
         xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
         xml += '<Styles><Style ss:ID="header"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#F3F4F6" ss:Pattern="Solid"/></Style><Style ss:ID="cell"><Font ss:Size="9"/></Style></Styles>';
-        xml += '<Worksheet ss:Name="Booking"><Table>';
+        xml += '<Worksheet ss:Name="Cancellation"><Table>';
         headers.forEach(() => { xml += '<Column ss:AutoFitWidth="1" ss:Width="110"/>'; });
         xml += '<Row>'; headers.forEach(h => { xml += `<Cell ss:StyleID="header"><Data ss:Type="String">${h}</Data></Cell>`; }); xml += '</Row>';
         rows.forEach(row => { xml += '<Row>'; row.forEach((val, ci) => { const type = ci === 0 ? 'Number' : 'String'; const escaped = String(val).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); xml += `<Cell ss:StyleID="cell"><Data ss:Type="${type}">${escaped}</Data></Cell>`; }); xml += '</Row>'; });
         xml += '</Table></Worksheet></Workbook>';
         const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `Booking_${new Date().toISOString().slice(0, 10)}.xls`;
+        const a = document.createElement('a'); a.href = url; a.download = `Cancellation_${new Date().toISOString().slice(0, 10)}.xls`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     };
 
@@ -136,12 +139,12 @@ const BookingListPage = () => {
                                     <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)} style={{ marginRight: '10px', display: window.innerWidth <= 850 ? 'block' : 'none' }}>
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
                                     </button>
-                                    <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', width: '30px', height: '30px', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                                    <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', width: '30px', height: '30px', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
                                     </span>
                                     <div className="dash-title-text" style={{ marginLeft: '10px' }}>
-                                        <h2 className="dash-title" style={{ fontSize: '15px', marginBottom: '2px' }}>Booking List</h2>
-                                        <div className="dash-welcome" style={{ fontSize: '10.5px' }}><span>Booking records from Supabase</span></div>
+                                        <h2 className="dash-title" style={{ fontSize: '15px', marginBottom: '2px' }}>Cancellation</h2>
+                                        <div className="dash-welcome" style={{ fontSize: '10.5px' }}><span>Cancellation records from Supabase</span></div>
                                     </div>
                                 </div>
                                 <div className="ss-search-wrap">
@@ -165,8 +168,8 @@ const BookingListPage = () => {
                         </div>
                         <div className="ss-table-card">
                             <div className="ss-rainbow-bar"></div>
-                            {isLoading ? (<div className="ss-loading"><div className="ss-spinner"></div><p>Loading Bookings...</p></div>)
-                            : filteredData.length === 0 ? (<div className="ss-empty"><div className="ss-empty-icon">📋</div><p>No booking records found</p></div>)
+                            {isLoading ? (<div className="ss-loading"><div className="ss-spinner"></div><p>Loading Cancellation records...</p></div>)
+                            : filteredData.length === 0 ? (<div className="ss-empty"><div className="ss-empty-icon">❌</div><p>No cancellation records found</p></div>)
                             : (<>
                                 <div className="ss-table-wrap">
                                     <table className="ss-table">
@@ -221,6 +224,6 @@ const BookingListPage = () => {
     );
 };
 
-export default BookingListPage;
+export default CancellationPage;
 
 

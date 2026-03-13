@@ -26,6 +26,7 @@ const EmpDataPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -90,6 +91,12 @@ const EmpDataPage = () => {
 
     useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+        setSortConfig({ key, direction });
+    };
+
     const goToPage = (page) => { if (page >= 1 && page <= totalPages) setCurrentPage(page); };
 
     const getPageNumbers = () => {
@@ -130,7 +137,7 @@ const EmpDataPage = () => {
                             <div className="ss-toolbar-left">
                                 <div className="dash-title-row" style={{ marginRight: '15px' }}>
                                     <button className="mobile-menu-btn" onClick={() => setMobileSidebar(true)} style={{ marginRight: '10px', display: window.innerWidth <= 850 ? 'block' : 'none' }}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
                                     </button>
                                     <span className="dash-icon" style={{ background: 'linear-gradient(135deg, #06b6d4, #0891b2)', width: '30px', height: '30px', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
@@ -166,7 +173,21 @@ const EmpDataPage = () => {
                             : (<>
                                 <div className="ss-table-wrap">
                                     <table className="ss-table">
-                                        <thead><tr><th className="th-center">SL No</th>{columns.map(col => (<th key={col}>{formatHeader(col)}</th>))}</tr></thead>
+                                        <thead>
+                                            <tr>
+                                                <th className="th-center">SL No</th>
+                                                {columns.map(col => (
+                                                    <th key={col} onClick={() => requestSort(col)} style={{ cursor: 'pointer' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            {formatHeader(col)}
+                                                            <span style={{ opacity: sortConfig.key === col ? 1 : 0.3, fontSize: '10px', marginLeft: '4px' }}>
+                                                                {sortConfig.key === col && sortConfig.direction === 'desc' ? '' : ''}
+                                                            </span>
+                                                        </div>
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
                                         <tbody>
                                             {paginatedData.map((row, idx) => (
                                                 <tr key={row.id || idx}>
@@ -204,3 +225,5 @@ const EmpDataPage = () => {
 };
 
 export default EmpDataPage;
+
+
