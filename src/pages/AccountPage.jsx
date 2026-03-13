@@ -75,7 +75,7 @@ const AccountPage = () => {
     };
 
     const handleLogoutClick = () => { setShowLogoutModal(true); if (window.innerWidth <= 850) setMobileSidebar(false); };
-    const confirmLogout = () => { localStorage.removeItem('user'); navigate('/', { replace: true }); };
+    const confirmLogout = () => { localStorage.removeItem('user'); localStorage.removeItem('loginExpiry'); navigate('/', { replace: true }); };
     const cancelLogout = () => setShowLogoutModal(false);
 
     const roleBadgeColor = { admin: '#ef4444', head: '#f59e0b', user: '#10b981' };

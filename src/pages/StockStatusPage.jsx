@@ -55,6 +55,7 @@ const StockStatusPage = () => {
         const INACTIVITY_LIMIT = 600000;
         const handleInactivityLogout = () => {
             localStorage.removeItem('user');
+            localStorage.removeItem('loginExpiry');
             navigate('/', { replace: true });
         };
         const resetTimer = () => {
@@ -77,6 +78,7 @@ const StockStatusPage = () => {
 
     const confirmLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('loginExpiry');
         navigate('/', { replace: true });
     };
 
@@ -103,7 +105,7 @@ const StockStatusPage = () => {
 
             <main className="main">
                 <div className="content" style={{ padding: '10px 14px' }}>
-                    <StockStatus 
+                    <StockStatus
                         onMenuClick={() => setMobileSidebar(true)}
                         userName={userName}
                         onLogoutClick={handleLogoutClick}

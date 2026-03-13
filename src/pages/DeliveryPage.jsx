@@ -129,6 +129,7 @@ const DeliveryPage = () => {
         const INACTIVITY_LIMIT = 600000;
         const handleInactivityLogout = () => {
             localStorage.removeItem('user');
+            localStorage.removeItem('loginExpiry');
             navigate('/', { replace: true });
         };
         const resetTimer = () => {
@@ -152,7 +153,7 @@ const DeliveryPage = () => {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from('delivery')
+                .from('Deliveries')
                 .select('*')
                 .order('upload_date', { ascending: false });
 
@@ -179,6 +180,7 @@ const DeliveryPage = () => {
 
     const confirmLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('loginExpiry');
         navigate('/', { replace: true });
     };
 

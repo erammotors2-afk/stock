@@ -79,6 +79,7 @@ const RetailReportPage = () => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
                 localStorage.removeItem('user');
+                localStorage.removeItem('loginExpiry');
                 navigate('/', { replace: true });
             }, INACTIVITY_LIMIT);
         };
@@ -154,7 +155,7 @@ const RetailReportPage = () => {
         setShowLogoutModal(true);
         if (window.innerWidth <= 850) setMobileSidebar(false);
     };
-    const confirmLogout = () => { localStorage.removeItem('user'); navigate('/', { replace: true }); };
+    const confirmLogout = () => { localStorage.removeItem('user'); localStorage.removeItem('loginExpiry'); navigate('/', { replace: true }); };
     const cancelLogout = () => setShowLogoutModal(false);
 
     const formatDate = (dateStr) => {

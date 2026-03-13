@@ -68,8 +68,13 @@ const LoginPage = () => {
 
     useEffect(() => {
         const user = localStorage.getItem('user');
-        if (user) {
+        const expiry = localStorage.getItem('loginExpiry');
+        if (user && expiry && Date.now() < parseInt(expiry)) {
             navigate('/dashboard', { replace: true });
+        } else if (user) {
+            // Session expired — clear stale data
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginExpiry');
         }
     }, [navigate]);
 
@@ -141,7 +146,10 @@ const LoginPage = () => {
                 status: data.status
             };
 
+            // Set session with 8-hour expiry
+            const expiryTime = Date.now() + 8 * 60 * 60 * 1000;
             localStorage.setItem('user', JSON.stringify(userData));
+            localStorage.setItem('loginExpiry', expiryTime.toString());
 
             let welcomeName = data.full_name || data.username || 'User';
             if (welcomeName.includes('@') && /\d/.test(welcomeName)) {

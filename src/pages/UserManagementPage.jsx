@@ -59,6 +59,7 @@ const UserManagementPage = () => {
 
         const handleInactivityLogout = () => {
             localStorage.removeItem('user');
+            localStorage.removeItem('loginExpiry');
             navigate('/', { replace: true });
         };
 
@@ -85,6 +86,7 @@ const UserManagementPage = () => {
 
     const confirmLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('loginExpiry');
         navigate('/', { replace: true });
     };
 

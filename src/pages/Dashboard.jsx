@@ -37,6 +37,7 @@ const Dashboard = () => {
         const INACTIVITY_LIMIT = 600000;
         const handleInactivityLogout = () => {
             localStorage.removeItem('user');
+            localStorage.removeItem('loginExpiry');
             navigate('/', { replace: true });
         };
         const resetTimer = () => {
@@ -59,6 +60,7 @@ const Dashboard = () => {
 
     const confirmLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('loginExpiry');
         navigate('/', { replace: true });
     };
 

@@ -16,7 +16,14 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const user = localStorage.getItem('user');
-    setIsAuthenticated(!!user);
+    const expiry = localStorage.getItem('loginExpiry');
+    const isValid = !!(user && expiry && Date.now() < parseInt(expiry));
+    if (!isValid && user) {
+      // Session expired — wipe stale data
+      localStorage.removeItem('user');
+      localStorage.removeItem('loginExpiry');
+    }
+    setIsAuthenticated(isValid);
     setTimeout(() => setLoading(false), 500);
   }, []);
 

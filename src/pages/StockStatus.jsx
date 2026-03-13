@@ -21,7 +21,7 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('stock')
+                .from('stock_data_new')
                 .select('*')
                 .order('upload_date', { ascending: false });
 
