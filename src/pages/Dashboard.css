@@ -129,7 +129,7 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    transition: width .35s cubic-bezier(0.4, 0, 0.2, 1), background .4s;
+    transition: width .6s cubic-bezier(0.4, 0, 0.2, 1), background .4s;
     position: relative;
     z-index: 1000;
     flex-shrink: 0;
@@ -604,7 +604,7 @@
 .sb-submenu {
     max-height: 0;
     overflow: hidden;
-    transition: max-height .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s;
+    transition: max-height .5s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s;
     opacity: 0;
     padding: 0 0 0 12px;
     background: var(--sub-bg);
