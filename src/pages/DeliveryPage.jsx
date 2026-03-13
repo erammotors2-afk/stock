@@ -155,7 +155,7 @@ const DeliveryPage = () => {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from('Deliveries')
+                .from('delivery_ytd')
                 .select('*')
                 .order('upload_date', { ascending: false });
 

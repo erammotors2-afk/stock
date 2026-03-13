@@ -102,7 +102,7 @@ const RetailReportPage = () => {
 
             // ── Data query: only fetch current page ──
             let dataQuery = supabase
-                .from('net_sale')
+                .from('retail')
                 .select('*')
                 .order('uploaded_at', { ascending: false })
                 .range(from, to);
@@ -115,7 +115,7 @@ const RetailReportPage = () => {
 
             // ── Count query: lightweight estimated count (no data transfer) ──
             let countQuery = supabase
-                .from('net_sale')
+                .from('retail')
                 .select('id', { count: 'estimated', head: true });
 
             if (search) {

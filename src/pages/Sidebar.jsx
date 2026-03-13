@@ -192,6 +192,24 @@ const Sidebar = ({
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
         ),
+        shield: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+        ),
+        empData: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        ),
+        ftdRetail: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+        ),
     };
 
     // ═══ MENU DEFINITIONS ═══
@@ -205,6 +223,8 @@ const Sidebar = ({
         { id: 'sapDoneDms', label: 'SAP Done DMS Pend', icon: icons.sapDone, roles: ['user', 'head', 'admin'], color: 'indigo', path: '/sap-done-dms' },
         { id: 'pendingList', label: 'Pending List', icon: icons.pending, roles: ['user', 'head', 'admin'], color: 'yellow', path: '/pending-list' },
         { id: 'approvedList', label: 'Approved List', icon: icons.approved, roles: ['user', 'head', 'admin'], color: 'cyan', path: '/approved-list' },
+        { id: 'empData', label: 'Employee Data', icon: icons.empData, roles: ['user', 'head', 'admin'], color: 'sky', path: '/emp-data' },
+        { id: 'shield', label: 'Shield', icon: icons.shield, roles: ['user', 'head', 'admin'], color: 'teal', path: '/shield' },
     ];
 
     const reportsMenu = [
@@ -223,6 +243,7 @@ const Sidebar = ({
             ]
         },
         { id: 'dmsRetail', label: 'DMS Retail', icon: icons.dmsRetail, roles: ['user', 'head', 'admin'], color: 'rose', path: '/dms-retail' },
+        { id: 'ftdRetail', label: 'FTD Retail', icon: icons.ftdRetail, roles: ['user', 'head', 'admin'], color: 'lime', path: '/ftd-retail' },
         { id: 'analytics', label: 'Analytics', icon: icons.analytics, roles: ['user', 'head', 'admin'], color: 'emerald', path: '/analytics' },
     ];
 

@@ -9,6 +9,12 @@ import DeliveryPage from './pages/DeliveryPage';
 import RetailReportPage from './pages/RetailReportPage';
 import PreferencesPage from './pages/PreferencesPage';
 import AccountPage from './pages/AccountPage';
+import BillingPage from './pages/BillingPage';
+import BookingListPage from './pages/BookingListPage';
+import PBookingPage from './pages/PBookingPage';
+import EmpDataPage from './pages/EmpDataPage';
+import FtdRetailPage from './pages/FtdRetailPage';
+import ShieldPage from './pages/ShieldPage';
 
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -95,6 +101,30 @@ function App() {
           <ProtectedRoute><AccountPage /></ProtectedRoute>
         } />
 
+        <Route path="/billing" element={
+          <ProtectedRoute><BillingPage /></ProtectedRoute>
+        } />
+
+        <Route path="/booking-list" element={
+          <ProtectedRoute><BookingListPage /></ProtectedRoute>
+        } />
+
+        <Route path="/p-booking" element={
+          <ProtectedRoute><PBookingPage /></ProtectedRoute>
+        } />
+
+        <Route path="/emp-data" element={
+          <ProtectedRoute><EmpDataPage /></ProtectedRoute>
+        } />
+
+        <Route path="/ftd-retail" element={
+          <ProtectedRoute><FtdRetailPage /></ProtectedRoute>
+        } />
+
+        <Route path="/shield" element={
+          <ProtectedRoute><ShieldPage /></ProtectedRoute>
+        } />
+
         {/* Catch all - redirect to dashboard */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
@@ -102,4 +132,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
