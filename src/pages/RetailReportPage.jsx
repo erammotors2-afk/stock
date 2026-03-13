@@ -41,7 +41,9 @@ const RETAIL_COLUMNS = [
 const ROW_SIZE = 100;
 
 const RetailReportPage = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        try { const p = localStorage.getItem('userPreferences'); return p ? !!JSON.parse(p).sidebarDefaultOpen : false; } catch { return false; }
+    });
     const [mobileSidebar, setMobileSidebar] = useState(false);
     const [activeMenu, setActiveMenu] = useState('retailReport');
     const [darkMode, setDarkMode] = useDarkMode();

@@ -13,6 +13,20 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
 
     const rowsPerPage = 100;
 
+    // Read user preferences
+    const prefs = React.useMemo(() => {
+        try { const p = localStorage.getItem('userPreferences'); return p ? JSON.parse(p) : {}; } catch { return {}; }
+    }, []);
+    const showSLNo = prefs.showSLNo !== false; // default true
+    const autoRefresh = !!prefs.autoRefresh;
+
+    // Auto-refresh every 5 minutes if enabled
+    useEffect(() => {
+        if (!autoRefresh) return;
+        const interval = setInterval(() => fetchStocks(), 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [autoRefresh]);
+
     useEffect(() => {
         fetchStocks();
     }, []);
@@ -366,7 +380,7 @@ const StockStatus = ({ onMenuClick, userName, onLogoutClick }) => {
                                 <tbody>
                                     {paginatedStocks.map((stock, idx) => (
                                         <tr key={stock.id || idx}>
-                                            <td className="td-center">{startIndex + idx + 1}</td>
+                                            {showSLNo && <td className="td-center">{startIndex + idx + 1}</td>}
                                             <td className="td-center">
                                                 <button className="ss-action-btn" onClick={() => handleAction(stock)} title="View">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

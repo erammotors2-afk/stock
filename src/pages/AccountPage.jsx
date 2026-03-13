@@ -67,7 +67,17 @@ const AccountPage = () => {
     }, [navigate]);
 
     const handleSaveName = () => {
+        // Save display name override
         localStorage.setItem('displayNameOverride', displayName);
+        // Also update the stored user object so all pages pick it up
+        try {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                parsedUser.full_name = displayName;
+                localStorage.setItem('user', JSON.stringify(parsedUser));
+            }
+        } catch (_) {}
         setUserName(displayName);
         setEditingName(false);
         setNameSaved(true);

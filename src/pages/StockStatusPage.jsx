@@ -7,7 +7,9 @@ import LogoutModal from './LogoutModal';
 import useDarkMode from '../hooks/useDarkMode';
 
 const StockStatusPage = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        try { const p = localStorage.getItem('userPreferences'); return p ? !!JSON.parse(p).sidebarDefaultOpen : false; } catch { return false; }
+    });
     const [mobileSidebar, setMobileSidebar] = useState(false);
     const [activeMenu, setActiveMenu] = useState('stockStatus');
     const [darkMode, setDarkMode] = useDarkMode();

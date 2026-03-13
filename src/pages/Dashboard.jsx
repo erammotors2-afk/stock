@@ -6,7 +6,9 @@ import LogoutModal from './LogoutModal';
 import useDarkMode from '../hooks/useDarkMode';
 
 const Dashboard = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        try { const p = localStorage.getItem('userPreferences'); return p ? !!JSON.parse(p).sidebarDefaultOpen : false; } catch { return false; }
+    });
     const [darkMode, setDarkMode] = useDarkMode();
     const [activeMenu, setActiveMenu] = useState('dashboard');
     const [mobileSidebar, setMobileSidebar] = useState(false);

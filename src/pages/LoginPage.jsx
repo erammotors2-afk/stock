@@ -150,6 +150,17 @@ const LoginPage = () => {
             const expiryTime = Date.now() + 8 * 60 * 60 * 1000;
             localStorage.setItem('user', JSON.stringify(userData));
             localStorage.setItem('loginExpiry', expiryTime.toString());
+            localStorage.setItem('loginTimestamp', Date.now().toString());
+
+            // Read user's preferred landing page (from Preferences)
+            let redirectTo = '/dashboard';
+            try {
+                const savedPrefs = localStorage.getItem('userPreferences');
+                if (savedPrefs) {
+                    const prefs = JSON.parse(savedPrefs);
+                    if (prefs.defaultPage) redirectTo = prefs.defaultPage;
+                }
+            } catch (_) {}
 
             let welcomeName = data.full_name || data.username || 'User';
             if (welcomeName.includes('@') && /\d/.test(welcomeName)) {
@@ -169,7 +180,7 @@ const LoginPage = () => {
             }
 
             setTimeout(() => {
-                navigate('/dashboard', { replace: true });
+                navigate(redirectTo, { replace: true });
                 setIsLoggingIn(false);
             }, 1200);
 
