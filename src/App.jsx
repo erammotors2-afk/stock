@@ -36,35 +36,35 @@ const ProtectedRoute = ({ children }) => {
 
     // Track User Online Status
     if (isValid && user) {
-        try {
-            const parsedUser = JSON.parse(user);
-            const channel = supabase.channel('online-users', {
-                config: {
-                    presence: {
-                        key: parsedUser.username || parsedUser.full_name || 'unknown'
-                    }
-                }
-            });
+      try {
+        const parsedUser = JSON.parse(user);
+        const channel = supabase.channel('online-users', {
+          config: {
+            presence: {
+              key: parsedUser.username || parsedUser.full_name || 'unknown'
+            }
+          }
+        });
 
-            channel.on('presence', { event: 'sync' }, () => {
-                // Handled in components that need to see online users
-            }).subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await channel.track({
-                        user_id: parsedUser.id,
-                        username: parsedUser.username || parsedUser.full_name,
-                        role: parsedUser.role,
-                        online_at: new Date().toISOString(),
-                    });
-                }
+        channel.on('presence', { event: 'sync' }, () => {
+          // Handled in components that need to see online users
+        }).subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({
+              user_id: parsedUser.id,
+              username: parsedUser.username || parsedUser.full_name,
+              role: parsedUser.role,
+              online_at: new Date().toISOString(),
             });
+          }
+        });
 
-            return () => {
-                channel.unsubscribe();
-            };
-        } catch (err) {
-            console.error(err);
-        }
+        return () => {
+          channel.unsubscribe();
+        };
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, []);
 
@@ -171,4 +171,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
